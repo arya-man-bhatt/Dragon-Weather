@@ -1,485 +1,1411 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Atmosphere Intelligence - Nexus Build</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      --mech-white: #F4F6F9;
-      --carbon-black: #0F1115;
-      --neon-red: #FF2A42;
-      --neon-red-glow: rgba(255, 42, 66, 0.6);
-      --hud-glass: rgba(255, 255, 255, 0.85);
-    }
-
-    body {
-      font-family: 'Rajdhani', sans-serif;
-      background-color: var(--mech-white);
-      color: var(--carbon-black);
-      background-image: 
-        linear-gradient(rgba(15, 17, 21, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(15, 17, 21, 0.03) 1px, transparent 1px);
-      background-size: 40px 40px;
-      overflow-x: hidden;
-    }
-
-    h1, h2, h3, .font-tech { font-family: 'Orbitron', sans-serif; }
-
-    /* Sci-Fi Angled Card UI */
-    .hud-panel {
-      background: var(--hud-glass);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(15, 17, 21, 0.1);
-      clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atmosphere Intelligence - Nexus Build</title>
     
-    .hud-panel::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 3px;
-      background: var(--neon-red);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s ease;
-    }
-
-    .hud-panel:hover {
-      transform: translateY(-5px) scale(1.01);
-      box-shadow: 0 15px 40px rgba(255, 42, 66, 0.15);
-      border-color: rgba(255, 42, 66, 0.3);
-    }
+    <!-- External Libraries & Frameworks -->
+    <script src="https://cdn.tailwindcss.com"></script> <!-- Tailwind CSS for utility-based responsive styling -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js for thermal trajectory visual analytics -->
+    <script src="https://unpkg.com/lucide@latest"></script> <!-- Lucide for clean, modern SVG icons -->
     
-    .hud-panel:hover::before { transform: scaleX(1); }
-
-    /* Interactive Node States (Hover & Click) */
-    .interactive-node {
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
+    <!-- Typography: Orbitron for tech/headers, Rajdhani for readable body text -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     
-    /* Default continuous idle animations */
-    .idle-spin { animation: spin 10s linear infinite; }
-    .idle-pulse { animation: pulse 3s ease-in-out infinite; }
-    .idle-float { animation: float 4s ease-in-out infinite; }
+    <style>
+        /* Global Custom Properties (Color Palette & Effects) */
+        :root {
+            --mech-white: #F4F6F9;
+            --carbon-black: #0F1115;
+            --neon-red: #FF2A42;
+            --neon-red-glow: rgba(255, 42, 66, 0.6);
+            --hud-glass: rgba(255, 255, 255, 0.85); /* Glassmorphic base for card architecture */
+        }
 
-    /* Exaggerated Hover States */
-    .interactive-node:hover .idle-spin { animation: spin 1s linear infinite; color: var(--neon-red); transform: scale(1.2); }
-    .interactive-node:hover .idle-pulse { animation: pulse 0.5s ease-in-out infinite; color: var(--neon-red); filter: drop-shadow(0 0 8px var(--neon-red)); }
-    .interactive-node:hover {
-      background: var(--carbon-black);
-      color: var(--mech-white);
-      border-color: var(--neon-red);
-      transform: scale(1.05);
-      box-shadow: 0 0 20px var(--neon-red-glow);
-    }
-    .interactive-node:hover * { color: var(--mech-white); }
-    .interactive-node:hover i { color: var(--neon-red); }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: var(--mech-white);
+            color: var(--carbon-black);
+            /* Grid background overlay for a technical blueprint feel */
+            background-image: linear-gradient(rgba(15, 17, 21, 0.03) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(15, 17, 21, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            overflow-x: hidden;
+        }
 
-    /* Click Reaction */
-    .interactive-node:active {
-      transform: scale(0.92);
-      box-shadow: 0 0 5px var(--neon-red-glow);
-    }
-    .click-shockwave {
-      animation: shockwave 0.4s ease-out forwards;
-    }
+        h1, h2, h3, .font-tech {
+            font-family: 'Orbitron', sans-serif;
+        }
 
-    /* Keyframes */
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse { 0%, 100% { opacity: 0.8; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    @keyframes shockwave {
-      0% { box-shadow: 0 0 0 0 rgba(255, 42, 66, 0.8); }
-      100% { box-shadow: 0 0 0 30px rgba(255, 42, 66, 0); }
-    }
+        /* Sci-Fi Angled Card UI (Glassmorphic Panels) */
+        .hud-panel {
+            background: var(--hud-glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(15, 17, 21, 0.1);
+            /* Clipped corners for mechanical styling */
+            clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
 
-    /* Robotic Dragon Reference Animations */
-    .mecha-dragon-body {
-      transform-origin: center;
-      animation: float 6s ease-in-out infinite;
-    }
-    .mecha-jaw {
-      transform-origin: 100px 115px;
-      animation: jaw-breathe 4s ease-in-out infinite;
-      transition: all 0.3s;
-    }
-    .mecha-eye {
-      fill: var(--neon-red);
-      filter: drop-shadow(0 0 5px var(--neon-red));
-      animation: eye-glitch 5s infinite;
-      transition: all 0.2s;
-    }
-    
-    /* Dragon Hover & Click */
-    #dragon-container:hover .mecha-jaw { transform: rotate(12deg); }
-    #dragon-container:hover .mecha-eye { fill: #FFF; filter: drop-shadow(0 0 15px var(--neon-red)); transform: scale(1.3); }
-    #dragon-container:hover .mecha-dragon-body { animation: shake 0.5s infinite; }
-    #dragon-container:active .mecha-jaw { transform: rotate(20deg); }
+        /* Red scanning bar effect on hover for panels */
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--neon-red);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
 
-    @keyframes jaw-breathe { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(3deg); } }
-    @keyframes eye-glitch { 
-      0%, 96%, 100% { opacity: 1; transform: scale(1); } 
-      97% { opacity: 0; transform: scale(1.2); } 
-      98% { opacity: 1; transform: scale(0.8); } 
-    }
-    @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(1px, -1px); } 75% { transform: translate(-1px, 1px); } }
+        .hud-panel:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 40px rgba(255, 42, 66, 0.15);
+            border-color: rgba(255, 42, 66, 0.3);
+        }
 
-    /* Custom Chart Tooltip */
-    #chart-container { position: relative; height: 260px; width: 100%; }
+        .hud-panel:hover::before {
+            transform: scaleX(1);
+        }
 
-    /* Scanline overlay for the dark header */
-    .scanline {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(to bottom, transparent, rgba(255,42,66,0.1), transparent);
-      animation: scan 3s linear infinite;
-      pointer-events: none;
-    }
-    @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-  </style>
+        /* Interactive Node States (Hover & Click Elements) */
+        .interactive-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        /* Default continuous idle animations for visual cues */
+        .idle-spin { animation: spin 10s linear infinite; }
+        .idle-pulse { animation: pulse 3s ease-in-out infinite; }
+        .idle-float { animation: float 4s ease-in-out infinite; }
+
+        /* Iconic Flowing Wind Stream Animations */
+        .flowing-wind-wrapper {
+            animation: wind-wave-float 3s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wind-stream-svg {
+            overflow: visible;
+        }
+
+        .wind-line {
+            stroke-dasharray: 16 12;
+            stroke-dashoffset: 28;
+            animation: wind-flow-dash 1.8s linear infinite;
+        }
+
+        .wind-line-1 { animation-delay: 0s; }
+        .wind-line-2 { animation-delay: -0.5s; }
+        .wind-line-3 { animation-delay: -1.0s; }
+
+        @keyframes wind-flow-dash {
+            0% {
+                stroke-dashoffset: 28;
+                opacity: 0.3;
+                transform: translateX(-1.5px);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(1.5px);
+            }
+            100% {
+                stroke-dashoffset: 0;
+                opacity: 0.3;
+                transform: translateX(-1.5px);
+            }
+        }
+
+        @keyframes wind-wave-float {
+            0%, 100% { transform: translateY(0) scaleX(1); }
+            50% { transform: translateY(-1px) scaleX(1.08); }
+        }
+
+        /* Hover overdrive effect for Wind Node */
+        .interactive-node:hover .wind-line {
+            animation-duration: 0.6s;
+            stroke: var(--mech-white);
+            filter: drop-shadow(0 0 6px var(--neon-red));
+        }
+
+        .interactive-node:hover .flowing-wind-wrapper {
+            animation: wind-wave-float 0.8s ease-in-out infinite;
+        }
+
+        /* Exaggerated Hover States */
+        .interactive-node:hover .idle-spin {
+            animation: spin 1s linear infinite;
+            color: var(--neon-red);
+            transform: scale(1.2);
+        }
+
+        .interactive-node:hover .idle-pulse {
+            animation: pulse 0.5s ease-in-out infinite;
+            color: var(--neon-red);
+            filter: drop-shadow(0 0 8px var(--neon-red));
+        }
+
+        .interactive-node:hover {
+            background: var(--carbon-black);
+            color: var(--mech-white);
+            border-color: var(--neon-red);
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--neon-red-glow);
+        }
+
+        #search-form button.interactive-node:hover {
+            transform: none;
+        }
+
+        #search-form button.interactive-node {
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        #search-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 140px;
+            column-gap: 18px;
+            align-items: start;
+            width: 100%;
+            max-width: 600px;
+            min-width: 0;
+        }
+
+        #search-form > div {
+            height: 52px;
+            width: 100%;
+            min-width: 0;
+        }
+
+        #city-input {
+            height: 100%;
+        }
+
+        .search-button {
+            position: relative;
+            width: 140px;
+            min-width: 140px;
+            min-height: 52px;
+            height: 52px;
+            align-self: start;
+            overflow: hidden;
+            border: 1px solid #FF7180;
+            background: linear-gradient(135deg, #FF2A42, #C91431);
+            box-shadow: 0 8px 22px rgba(255, 42, 66, 0.28), inset 0 1px rgba(255, 255, 255, 0.3);
+            isolation: isolate;
+        }
+
+        .search-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.38) 50%, transparent 75%);
+            transform: translateX(-130%);
+            animation: search-sheen 3.4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .search-button:hover {
+            background: linear-gradient(135deg, #FF4056, #E11D3B);
+            box-shadow: 0 10px 28px rgba(255, 42, 66, 0.44), inset 0 1px rgba(255, 255, 255, 0.4);
+        }
+
+        .search-button:focus-visible {
+            outline: 3px solid rgba(255, 113, 128, 0.55);
+            outline-offset: 3px;
+        }
+
+        .search-button svg {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+        }
+
+        @keyframes search-sheen {
+            0%, 45% { transform: translateX(-130%); }
+            70%, 100% { transform: translateX(130%); }
+        }
+
+        @media (max-width: 767px) {
+            #search-form { max-width: none; }
+            #search-form { grid-template-columns: minmax(0, 1fr) 124px; column-gap: 18px; }
+            .search-button { width: 124px; min-width: 124px; padding-left: 1rem; padding-right: 1rem; }
+        }
+
+        .header-logo {
+            position: relative;
+            isolation: isolate;
+            animation: logo-float 4s ease-in-out infinite;
+            box-shadow: 0 0 18px rgba(255, 42, 66, 0.28), inset 0 0 12px rgba(255, 42, 66, 0.12);
+        }
+
+        .header-logo::before,
+        .header-logo::after {
+            content: '';
+            position: absolute;
+            inset: -7px;
+            border: 1px solid rgba(255, 42, 66, 0.75);
+            pointer-events: none;
+        }
+
+        .header-logo::before {
+            animation: logo-ring 5s linear infinite;
+        }
+
+        .header-logo::after {
+            inset: 5px;
+            border-color: rgba(15, 17, 21, 0.35);
+            animation: logo-pulse 2s ease-in-out infinite;
+        }
+
+        .header-logo-icon {
+            animation: logo-core 2.2s ease-in-out infinite;
+            filter: drop-shadow(0 0 5px rgba(255, 42, 66, 0.7));
+        }
+
+        @keyframes logo-float {
+            0%, 100% { transform: rotate(45deg) translateY(0); }
+            50% { transform: rotate(45deg) translateY(-3px); }
+        }
+
+        @keyframes logo-ring {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes logo-pulse {
+            0%, 100% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 0.9; transform: scale(1.08); }
+        }
+
+        @keyframes logo-core {
+            0%, 100% { transform: rotate(-45deg) scale(0.92); opacity: 0.8; }
+            50% { transform: rotate(-45deg) scale(1.12); opacity: 1; }
+        }
+
+        .interactive-node:hover * { color: var(--mech-white); }
+        .interactive-node:hover i { color: var(--neon-red); }
+
+        /* Click Reaction / Haptic Feedback Simulation */
+        .interactive-node:active {
+            transform: scale(0.92);
+            box-shadow: 0 0 5px var(--neon-red-glow);
+        }
+
+        .click-shockwave {
+            animation: shockwave 0.4s ease-out forwards;
+        }
+
+        .metric-node {
+            min-height: 126px;
+            border-radius: 0.75rem;
+            border-bottom: 4px solid var(--neon-red);
+            background: #FFFFFF;
+            box-shadow: 0 6px 18px rgba(15, 17, 21, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-node::after {
+            content: '';
+            position: absolute;
+            inset: auto -20% -55% 35%;
+            height: 90px;
+            background: radial-gradient(circle, rgba(255, 42, 66, 0.18), transparent 68%);
+            pointer-events: none;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .metric-node:hover::after {
+            transform: translate(-20px, -14px) scale(1.35);
+            opacity: 0.9;
+        }
+
+        .metric-node > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Standard Keyframes */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes shockwave {
+            0% { box-shadow: 0 0 0 0 rgba(255, 42, 66, 0.8); }
+            100% { box-shadow: 0 0 0 30px rgba(255, 42, 66, 0); }
+        }
+
+       /* --- Upgraded Cyber Dragon Core --- */
+
+/* Base Container & Ring Aesthetics */
+#dragon-container {
+    background: radial-gradient(circle at center, #1A1D24 0%, #0F1115 100%);
+    border-color: #334155;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(255, 42, 66, 0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: visible;
+}
+
+.dragon-ring {
+    transform-origin: center;
+    animation: spin-slow 20s linear infinite;
+    stroke: #334155;
+    transition: all 0.3s;
+}
+
+.dragon-head-group {
+    transform-origin: 100px 120px;
+    animation: dragon-idle-float 4s ease-in-out infinite;
+    transition: transform 0.1s ease;
+}
+
+/* Jaw Articulation */
+.dragon-jaw {
+    transform-origin: 105px 125px; /* Pivot precisely at the mechanical cheek joint */
+    animation: jaw-breathe 4s ease-in-out infinite;
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optics */
+.dragon-eye {
+    fill: var(--neon-red);
+    filter: drop-shadow(0 0 4px var(--neon-red));
+    animation: eye-glitch 5s infinite;
+    transition: all 0.1s;
+}
+
+/* Hidden Energy Core (Scream Beam) */
+.scream-beam {
+    opacity: 0;
+    transform-origin: 100px 125px;
+    transform: scaleX(0);
+    transition: all 0.1s;
+}
+
+/* =========================================
+   HOVER OVERDRIVE: ANGRY SCREAM SEQUENCE 
+   ========================================= */
+
+#dragon-container:hover {
+    border-color: var(--neon-red);
+    box-shadow: inset 0 0 30px rgba(255, 42, 66, 0.2), 0 0 30px rgba(255, 42, 66, 0.4);
+    transform: scale(1.05);
+}
+
+#dragon-container:hover .dragon-ring {
+    stroke: var(--neon-red);
+    animation: spin-fast 1s linear infinite;
+    filter: drop-shadow(0 0 8px var(--neon-red));
+}
+
+/* Violent shake and head tilt */
+#dragon-container:hover .dragon-head-group {
+    animation: rage-shake 0.15s infinite;
+    transform: rotate(-8deg) translateY(-5px); 
+}
+
+/* Jaw snaps aggressively open */
+#dragon-container:hover .dragon-jaw {
+    animation: none;
+    transform: rotate(38deg);
+}
+
+/* Blinding white optic flare */
+#dragon-container:hover .dragon-eye {
+    animation: none;
+    fill: #FFF;
+    filter: drop-shadow(0 0 15px var(--neon-red)) drop-shadow(0 0 30px #FFF);
+}
+
+/* Ignite the scream beam */
+#dragon-container:hover .scream-beam {
+    opacity: 1;
+    transform: scaleX(1);
+    animation: beam-pulse 0.1s infinite alternate;
+}
+
+/* --- Keyframes --- */
+@keyframes dragon-idle-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+
+@keyframes jaw-breathe {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(2deg); }
+}
+
+@keyframes rage-shake {
+    0% { transform: rotate(-8deg) translate(1px, 1px); }
+    25% { transform: rotate(-8.5deg) translate(-1px, -1px); }
+    50% { transform: rotate(-7.5deg) translate(-2px, 1px); }
+    75% { transform: rotate(-8deg) translate(2px, -1px); }
+    100% { transform: rotate(-8.5deg) translate(1px, -2px); }
+}
+
+@keyframes spin-slow { 100% { transform: rotate(360deg); } }
+@keyframes spin-fast { 100% { transform: rotate(-360deg); } }
+
+@keyframes beam-pulse {
+    0% { opacity: 0.8; filter: drop-shadow(0 0 10px var(--neon-red)); }
+    100% { opacity: 1; filter: drop-shadow(0 0 20px var(--neon-red)); }
+}
+
+        /* Dragon Interaction Overrides */
+        #dragon-container:hover .mecha-jaw { transform: rotate(12deg); }
+        #dragon-container:hover .mecha-eye {
+            fill: #FFF;
+            filter: drop-shadow(0 0 15px var(--neon-red));
+            transform: scale(1.3);
+        }
+        #dragon-container:hover .mecha-dragon-body { animation: shake 0.5s infinite; }
+        #dragon-container:active .mecha-jaw { transform: rotate(20deg); }
+
+        /* Dragon Animation Keyframes */
+        @keyframes jaw-breathe {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(3deg); }
+        }
+        
+        @keyframes eye-glitch {
+            0%, 96%, 100% { opacity: 1; transform: scale(1); }
+            97% { opacity: 0; transform: scale(1.2); }
+            98% { opacity: 1; transform: scale(0.8); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translate(0,0); }
+            25% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, 1px); }
+        }
+
+        /* Chart.js Container Responsiveness */
+        #chart-container {
+            position: relative;
+            height: 360px;
+            width: 100%;
+        }
+
+        .trajectory-panel {
+            min-height: 470px;
+        }
+
+        .trajectory-section {
+            grid-column: 1 / -1;
+            width: 100%;
+        }
+
+        .trajectory-icon {
+            animation: trajectory-scan 2.4s ease-in-out infinite;
+            transform-origin: center;
+            filter: drop-shadow(0 0 5px rgba(255, 42, 66, 0.5));
+        }
+
+        .trajectory-icon-ring {
+            animation: trajectory-ring 3.2s linear infinite;
+            transform-origin: center;
+        }
+
+        @keyframes trajectory-scan {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.78; }
+            45% { transform: scale(1.12) rotate(8deg); opacity: 1; }
+            65% { transform: scale(0.96) rotate(-5deg); opacity: 0.9; }
+        }
+
+        @keyframes trajectory-ring {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 767px) {
+            #chart-container { height: 300px; }
+            .trajectory-panel { min-height: 410px; }
+        }
+
+        /* Terminal-style Scanline overlay for the top header */
+        .scanline {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(255,42,66,0.1), transparent);
+            animation: scan 3s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+    </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
-
-  <div class="max-w-7xl w-full space-y-8 relative z-10">
-
-    <!-- Header Module -->
-    <header class="bg-gradient-to-r from-[var(--carbon-black)] to-[#1A1D24] text-[var(--mech-white)] clip-path-panel p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden rounded-xl border border-gray-800 shadow-2xl">
-      <div class="scanline"></div>
-      
-      <div class="flex items-center gap-5 z-10 interactive-node p-2 rounded-lg">
-        <!-- Animated Header Logo -->
-        <div class="relative w-14 h-14 bg-[var(--mech-white)] flex items-center justify-center text-[var(--carbon-black)] transform rotate-45 border-2 border-[var(--neon-red)]">
-          <i data-lucide="cpu" class="w-7 h-7 transform -rotate-45 idle-spin"></i>
-        </div>
-        <div>
-          <h1 class="text-3xl font-tech font-black tracking-widest uppercase">
-            Atmosphere <span class="text-[var(--neon-red)]">Intel</span>
-          </h1>
-          <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Nexus Command Terminal</p>
-        </div>
-      </div>
-
-      <form id="search-form" class="flex w-full md:w-auto gap-3 z-10">
-        <div class="relative flex-grow md:w-80 group">
-          <input 
-            type="text" 
-            id="city-input" 
-            placeholder="Initialize coordinates..." 
-            class="w-full bg-[#0A0C0F] border border-gray-700 text-[var(--mech-white)] pl-12 pr-4 py-3.5 placeholder-gray-600 focus:outline-none focus:border-[var(--neon-red)] transition-all font-bold tracking-wide uppercase text-sm rounded-none"
-            style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);"
-          />
-          <i data-lucide="crosshair" class="w-5 h-5 absolute left-4 top-3.5 text-[var(--neon-red)] group-focus-within:animate-spin"></i>
-        </div>
-        <button 
-          type="submit" 
-          class="interactive-node bg-[var(--neon-red)] text-[var(--mech-white)] px-8 py-3.5 font-tech font-bold uppercase tracking-widest flex items-center gap-2"
-          style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
-          <i data-lucide="satellite" class="w-4 h-4"></i> Scan
-        </button>
-      </form>
-    </header>
-
-    <!-- Dashboard Grid -->
-    <main class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-
-      <!-- Weather Core Unit -->
-      <section class="xl:col-span-1 hud-panel p-8 flex flex-col justify-between" id="core-card">
+    <div class="max-w-7xl w-full space-y-8 relative z-10">
         
-        <div>
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <h2 id="city-name" class="text-4xl font-tech font-black text-[var(--carbon-black)] uppercase tracking-tight">System Boot...</h2>
-              <p id="current-date" class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Acquiring temporal data</p>
-            </div>
-            <span class="px-3 py-1 text-[10px] font-bold bg-[var(--carbon-black)] text-[var(--neon-red)] tracking-widest uppercase flex items-center gap-2" style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
-              <span class="w-1.5 h-1.5 rounded-full bg-[var(--neon-red)] animate-ping"></span> Live feed
-            </span>
-          </div>
-
-          <!-- Mecha Dragon Projection Area -->
-          <div class="my-8 flex items-center justify-between relative">
-            <div class="z-10">
-              <div id="temperature" class="text-7xl font-tech font-black text-[var(--carbon-black)] tracking-tighter">--°</div>
-              <p id="weather-desc" class="text-md font-bold text-gray-600 mt-2 uppercase tracking-widest flex items-center gap-2">
-                --
-              </p>
-            </div>
+        <!-- Header Module: Search & Command Terminal -->
+        <header class="bg-gradient-to-r from-[var(--carbon-black)] to-[#1A1D24] text-[var(--mech-white)] clip-path-panel p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden rounded-xl border border-gray-800 shadow-2xl">
+            <div class="scanline"></div>
             
-            <!-- Interactive Robotic Dragon SVG (Based on Reference Image) -->
-            <div id="dragon-container" class="w-40 h-40 interactive-node flex justify-center items-center rounded-full bg-gray-100 p-1 shadow-inner border border-gray-200" title="Click to interact with Core">
-              <svg viewBox="0 0 200 200" class="mecha-dragon-body w-full h-full drop-shadow-xl z-20">
-                <!-- Back Spikes & Plating -->
-                <polygon points="120,50 145,25 135,60" fill="#CBD5E1" stroke="#0F1115" stroke-width="1.5"/>
-                <polygon points="135,40 165,15 150,55" fill="#94A3B8" stroke="#0F1115" stroke-width="1.5"/>
-                <polygon points="150,30 185,10 165,50" fill="#CBD5E1" stroke="#0F1115" stroke-width="1.5"/>
+            <div class="flex items-center gap-5 z-10 interactive-node p-2 rounded-lg">
+                <!-- Animated Header Logo -->
+                <div class="header-logo relative w-14 h-14 bg-[var(--mech-white)] flex items-center justify-center text-[var(--carbon-black)] border-2 border-[var(--neon-red)]">
+                    <i data-lucide="cpu" class="header-logo-icon w-7 h-7"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-tech font-black tracking-widest uppercase">
+                        Atmosphere <span class="text-[var(--neon-red)]">Intel</span>
+                    </h1>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Nexus Command Terminal</p>
+                </div>
+            </div>
+
+            <!-- Location Search Form -->
+            <form id="search-form" class="search-form flex w-full md:w-auto z-10">
+                <div class="relative w-full group">
+                    <input type="text" id="city-input" placeholder="Search a city..." aria-label="City name" required autocomplete="off"
+                           class="w-full bg-[#0A0C0F] border border-gray-700 text-[var(--mech-white)] pl-12 pr-4 py-3.5 placeholder-gray-600 focus:outline-none focus:border-[var(--neon-red)] transition-all font-bold tracking-wide uppercase text-sm rounded-none"
+                           style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);" />
+                    <i data-lucide="crosshair" class="w-5 h-5 absolute left-4 top-3.5 text-[var(--neon-red)] group-focus-within:animate-spin"></i>
+                </div>
+                <button type="submit" aria-label="Search weather" 
+                    class="search-button interactive-node text-[var(--mech-white)] px-8 py-3.5 font-tech font-bold uppercase tracking-widest flex items-center justify-center gap-2"
+                        style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+                    <i data-lucide="satellite" class="w-4 h-4"></i> Scan
+                </button>
+            </form>
+        </header>
+
+        <!-- Main Dashboard Grid Architecture -->
+        <main class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            
+            <!-- Weather Core Unit (Left Column) -->
+            <section class="xl:col-span-1 hud-panel p-8 flex flex-col justify-between" id="core-card">
+                <div>
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h2 id="city-name" class="text-4xl font-tech font-black text-[var(--carbon-black)] uppercase tracking-tight">System Boot...</h2>
+                            <p id="current-date" class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Acquiring temporal data</p>
+                        </div>
+                        <!-- Live Feed Indicator -->
+                        <span class="px-3 py-1 text-[10px] font-bold bg-[var(--carbon-black)] text-[var(--neon-red)] tracking-widest uppercase flex items-center gap-2"
+                              style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
+                            <span class="w-1.5 h-1.5 rounded-full bg-[var(--neon-red)] animate-ping"></span> Live feed
+                        </span>
+                    </div>
+
+                    <!-- Primary Readout & Mecha Dragon Projection -->
+                    <div class="my-8 flex items-center justify-between relative">
+                        <div class="z-10">
+                            <div id="temperature" class="text-7xl font-tech font-black text-[var(--carbon-black)] tracking-tighter">--°</div>
+                            <p id="weather-desc" class="text-md font-bold text-gray-600 mt-2 uppercase tracking-widest flex items-center gap-2">
+                                --
+                            </p>
+                        </div>
+
+                       <!-- Interactive Robotic Dragon SVG (Badge Aesthetic) -->
+<div id="dragon-container" class="w-40 h-40 interactive-node flex justify-center items-center rounded-full relative cursor-pointer" title="System Core: Hover to override">
+    
+    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl z-20 overflow-visible">
+        <!-- Outer Badge Tech Rings -->
+        <circle class="dragon-ring" cx="100" cy="100" r="92" fill="none" stroke-width="4" stroke-dasharray="20 10 5 10"/>
+        <circle class="dragon-ring" cx="100" cy="100" r="82" fill="none" stroke-width="1.5" stroke-dasharray="100 20" style="animation-direction: reverse; animation-duration: 25s;"/>
+
+        <!-- Main Dragon Assembly -->
+        <g class="dragon-head-group">
+            
+            <!-- Neck & Base Plating -->
+            <path d="M 100 120 L 140 190 L 70 190 Z" fill="#1A202C" stroke="#0F1115" stroke-width="2"/>
+            <path d="M 125 100 L 155 160 L 120 170 Z" fill="#2D3748" stroke="#0F1115" stroke-width="2"/>
+            
+            <!-- Metallic Neck Segments (Silver) -->
+            <path d="M 110 135 L 145 185 L 115 190 Z" fill="#CBD5E1" stroke="#0F1115" stroke-width="2"/>
+            <path d="M 95 155 L 125 195 L 90 195 Z" fill="#E2E8F0" stroke="#0F1115" stroke-width="2"/>
+
+            <!-- Energy Scream Beam (Hidden on idle) -->
+            <polygon class="scream-beam" points="60,135 15,120 0,140 15,160" fill="url(#beam-gradient)"/>
+
+            <!-- Lower Jaw (Rotates on hover) -->
+            <g class="dragon-jaw">
+                <!-- Inner Jaw Shadow -->
+                <path d="M 105 125 L 50 135 L 75 160 Z" fill="#1A202C" stroke="#0F1115" stroke-width="2"/>
+                <!-- Silver Mandible -->
+                <path d="M 115 130 L 55 145 L 65 165 L 100 160 Z" fill="#E2E8F0" stroke="#0F1115" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Sharp Teeth Accents -->
+                <polygon points="65,142 60,135 70,141" fill="#FFF"/>
+                <polygon points="80,139 75,130 85,138" fill="#FFF"/>
+            </g>
+
+            <!-- Upper Head Canopy (Dark Metal) -->
+            <path d="M 130 80 L 105 50 L 55 85 L 35 120 L 105 125 Z" fill="#2D3748" stroke="#0F1115" stroke-width="2.5" stroke-linejoin="round"/>
+            
+            <!-- Snout Armor Plate (Silver) -->
+            <path d="M 45 105 L 80 90 L 105 110 L 40 120 Z" fill="#CBD5E1" stroke="#0F1115" stroke-width="2"/>
+            <path d="M 35 120 L 45 105 L 50 125 Z" fill="#94A3B8" stroke="#0F1115" stroke-width="1.5"/>
+
+            <!-- Swept-Back Horns -->
+            <path d="M 110 65 Q 150 40 185 25 Q 160 65 140 85 Z" fill="#E2E8F0" stroke="#0F1115" stroke-width="2" stroke-linejoin="round"/>
+            <path d="M 125 50 Q 155 35 175 25 Q 160 55 145 65 Z" fill="#94A3B8"/>
+
+            <!-- Mechanical Cheek Joint / Pivot Anchor -->
+            <circle cx="105" cy="125" r="14" fill="#2D3748" stroke="#0F1115" stroke-width="2"/>
+            <circle cx="105" cy="125" r="7" fill="#E2E8F0" stroke="#FF2A42" stroke-width="1.5"/>
+            <circle cx="105" cy="125" r="2.5" fill="#0F1115"/>
+
+            <!-- Angular Optic / Eye -->
+            <polygon class="dragon-eye" points="80,95 100,85 92,105 75,100"/>
+            
+            <!-- Brow / Scowl Plate -->
+            <path d="M 70 85 L 105 75 L 95 90 Z" fill="#1A202C"/>
+
+            <!-- Dynamic Weather Hologram Anchor -->
+            <g id="weather-hologram" transform="translate(145, 60)"></g>
+        </g>
+
+        <!-- Gradient Definition for the Scream Beam -->
+        <defs>
+            <linearGradient id="beam-gradient" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#FF2A42" stop-opacity="1" />
+                <stop offset="50%" stop-color="#FF5A6D" stop-opacity="0.8" />
+                <stop offset="100%" stop-color="#FFF" stop-opacity="0" />
+            </linearGradient>
+        </defs>
+    </svg>
+</div>
+                    </div>
+                </div>
+
+                <!-- Auxiliary Metrics Grid (Wind, Humidity, Pressure, Visibility) -->
+                <div class="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
+                  <!-- Wind Speed Node -->
+<div class="interactive-node metric-node group cursor-pointer transition-all duration-500 ease-in-out p-4 flex flex-col gap-2 hover:bg-[var(--black-30,#121212)]" id="wind-node" style="--wind-duration: 2.5s;">
+    <div class="flex items-center justify-between z-10 relative">
+        <!-- Dynamic Morphing SVG Canvas -->
+        <svg id="wind-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-12 h-12 overflow-visible">
+            <style>
+                /* =========================================
+                   1. IDLE: THICK, DISTINCT SWIRLING WIND
+                   ========================================= */
+                .wind-group {
+                    transform-origin: center;
+                    transition: opacity 0.9s ease, transform 1.1s cubic-bezier(0.22, 1, 0.36, 1), filter 0.9s ease;
+                    opacity: 1;
+                    color: var(--black-30, #121212);
+                    filter: blur(0px);
+                }
+
+                /* Clean, distinct paths that do not overlap */
+                .wind-line {
+                    fill: none;
+                    stroke: #E63946;
+                    stroke-linecap: round;
+                    filter: drop-shadow(0 0 3px rgba(230, 57, 70, 0.55));
+                    /* Creates the visual gaps for the flowing effect */
+                    stroke-dasharray: 120 180; 
+                    animation: wind-flow var(--wind-duration, 2.5s) cubic-bezier(0.37, 0, 0.63, 1) infinite;
+                }
+
+                .wl-1 { --formation-delay: 0s; animation-delay: 0s; stroke-width: 4.5; stroke-dasharray: 80 150; }
+                .wl-2 { --formation-delay: 0.18s; animation-delay: -0.8s; stroke-width: 6; stroke-dasharray: 140 200; }
+                .wl-3 { --formation-delay: 0.36s; animation-delay: -1.5s; stroke-width: 4.5; stroke-dasharray: 90 160; }
+
+                @keyframes wind-flow {
+                    0% { stroke-dashoffset: 280; opacity: 0.2; }
+                    18% { opacity: 0.9; }
+                    72% { opacity: 1; }
+                    100% { stroke-dashoffset: -40; opacity: 0.2; }
+                }
+
+                /* =========================================
+                   2. HOVER: THE CLOUD MORPH
+                   ========================================= */
+                .cloud-group {
+                    transform-origin: center;
+                    /* The cloud follows the moving air into its final shape. */
+                    transition: opacity 0.25s ease, transform 1.2s cubic-bezier(0.22, 1, 0.36, 1), filter 1.2s ease;
+                    opacity: 0;
+                    transform: scale(0.35) translateX(28px) translateY(10px);
+                    filter: blur(5px);
+                }
+
+                .cloud-puff {
+                    opacity: 0;
+                    transform-box: fill-box;
+                    transform-origin: center;
+                    transform: scale(0.2) translateX(18px);
+                }
+
+                .puff-1 { --puff-delay: 0.1s; }
+                .puff-2 { --puff-delay: 0.28s; }
+                .puff-3 { --puff-delay: 0.46s; }
+
+                .akatsuki-base {
+                    fill: #B3132B;
+                    stroke: #F8E9E9;
+                    stroke-width: 2.8;
+                    stroke-linejoin: round;
+                    filter: drop-shadow(0 0 5px rgba(179, 19, 43, 0.65));
+                }
+
+                .akatsuki-swirl {
+                    fill: none;
+                    stroke: #FFFFFF;
+                    stroke-width: 2.5;
+                    stroke-linecap: round;
+                }
+
+                .akatsuki-emblem {
+                    fill: none;
+                    stroke: #FFFFFF;
+                    stroke-width: 2.4;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                }
+
+                /* =========================================
+                   3. INTERACTION DYNAMICS
+                   ========================================= */
                 
-                <!-- Main Body / Torso Shell -->
-                <path d="M 110 100 Q 150 120 140 170 L 100 170 Q 90 130 110 100 Z" fill="#1E293B" stroke="#0F1115" stroke-width="2"/>
-                <!-- Shoulder Armor Joint -->
-                <circle cx="130" cy="130" r="12" fill="#E2E8F0" stroke="#FF2A42" stroke-width="2"/>
-                <circle cx="130" cy="130" r="5" fill="#0F1115"/>
+                /* Wind sweeps away and blurs out */
+                .group:hover .wind-group {
+                    opacity: 0.22;
+                    transform: translateX(10px) scaleX(1.08);
+                    filter: blur(1px);
+                }
 
-                <!-- Forelimb / Claws -->
-                <path d="M 120 150 L 140 185 L 125 190 L 115 170 Z" fill="#CBD5E1" stroke="#0F1115" stroke-width="2"/>
-                <path d="M 105 160 L 115 195 L 100 198 L 95 175 Z" fill="#94A3B8" stroke="#0F1115" stroke-width="2"/>
+                .group:hover .wind-line {
+                    animation: line-to-cloud 0.82s cubic-bezier(0.22, 1, 0.36, 1) var(--formation-delay) forwards;
+                    filter: drop-shadow(0 0 7px rgba(230, 57, 70, 0.95));
+                }
 
-                <!-- Main Head Structure -->
-                <path d="M 70 80 L 110 50 L 135 85 L 115 115 L 75 110 Z" fill="#0F1115" stroke="#FF2A42" stroke-width="2.5" stroke-linejoin="round"/>
-                <!-- Snout Plate -->
-                <path d="M 45 90 L 75 80 L 75 110 L 50 115 Z" fill="#334155" stroke="#0F1115" stroke-width="2"/>
-                
-                <!-- Robotic Eye -->
-                <polygon points="90,75 108,70 102,88 88,85" class="mecha-eye"/>
-                <circle cx="98" cy="78" r="2.5" fill="#FFF" />
+                /* Cloud blooms into view */
+                .group:hover .cloud-group {
+                    opacity: 1;
+                    transform: scale(1) translateX(0) translateY(0);
+                    filter: blur(0);
+                    animation: form-cloud 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards, float-cloud 3.2s ease-in-out 1.2s infinite alternate;
+                }
 
-                <!-- Articulated Jaw Assembly -->
-                <g class="mecha-jaw">
-                  <path d="M 50 115 L 115 115 L 100 140 L 60 135 Z" fill="#1E293B" stroke="#FF2A42" stroke-width="2"/>
-                  <!-- Grill Lines / Tech Accents -->
-                  <line x1="70" y1="120" x2="73" y2="132" stroke="#F4F6F9" stroke-width="2"/>
-                  <line x1="85" y1="122" x2="88" y2="135" stroke="#F4F6F9" stroke-width="2"/>
+                .group:hover .cloud-puff {
+                    animation: cloud-puff-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) var(--puff-delay) forwards;
+                }
+
+                /* Text & Label high-contrast inversion */
+                .group:hover .node-label { color: var(--red-30, #E63946); }
+                .group:hover #wind-speed { color: var(--white-40, #FFFFFF); }
+
+                @keyframes float-cloud {
+                    0% { transform: translateX(0) translateY(1px) scale(1); filter: drop-shadow(0 0 5px rgba(230, 57, 70, 0.5)); }
+                    100% { transform: translateX(-2px) translateY(-3px) scale(1.025); filter: drop-shadow(0 0 13px rgba(230, 57, 70, 0.95)); }
+                }
+
+                @keyframes form-cloud {
+                    0% { opacity: 0; transform: scale(0.35) translateX(28px) translateY(10px); filter: blur(5px); }
+                    55% { opacity: 1; transform: scale(1.04) translateX(-3px) translateY(-1px); filter: blur(0.5px); }
+                    100% { opacity: 1; transform: scale(1) translateX(0) translateY(0); filter: blur(0); }
+                }
+
+                @keyframes line-to-cloud {
+                    0% { opacity: 1; stroke-dashoffset: 0; transform: translateX(0) scaleX(1); }
+                    55% { opacity: 0.9; transform: translateX(12px) scaleX(1.08); }
+                    100% { opacity: 0; stroke-dashoffset: -90; transform: translateX(28px) scaleX(0.65); }
+                }
+
+                @keyframes cloud-puff-in {
+                    0% { opacity: 0; transform: scale(0.2) translateX(18px); }
+                    70% { opacity: 1; transform: scale(1.08) translateX(-2px); }
+                    100% { opacity: 1; transform: scale(1) translateX(0); }
+                }
+            </style>
+
+            <!-- WIND LAYER (Idle State) -->
+            <g class="wind-group">
+                <!-- Top Wind Stream -->
+                <path class="wind-line wl-1" d="M 5 25 L 55 25 C 75 25, 75 10, 60 10 C 50 10, 50 20, 60 22" />
+                <!-- Center Heavy Wind Stream -->
+                <path class="wind-line wl-2" d="M -10 50 L 75 50 C 100 50, 100 80, 75 80 C 55 80, 55 60, 75 63" />
+                <!-- Bottom Wind Stream -->
+                <path class="wind-line wl-3" d="M 15 75 L 45 75 C 65 75, 65 95, 45 95 C 30 95, 30 80, 45 82" />
+            </g>
+
+            <!-- CLOUD LAYER (Hover State) -->
+            <g class="cloud-group">
+                <path class="akatsuki-base" d="M 16 56 C 10 47 18 37 29 39 C 31 27 45 22 55 30 C 64 21 80 27 81 40 C 94 40 99 51 91 60 C 96 70 87 80 76 77 C 68 87 52 86 46 77 C 35 84 21 78 23 68 C 15 67 12 62 16 56 Z" />
+                <g class="cloud-puff puff-1">
+                    <path class="akatsuki-emblem" d="M 25 53 C 31 48 37 52 34 57 C 32 61 26 61 24 57" />
                 </g>
+                <g class="cloud-puff puff-2">
+                    <path class="akatsuki-emblem" d="M 47 42 C 54 36 61 41 58 47 C 56 52 49 52 46 48" />
+                </g>
+                <g class="cloud-puff puff-3">
+                    <path class="akatsuki-emblem" d="M 67 59 C 74 54 81 58 78 64 C 76 69 69 69 66 65" />
+                </g>
+            </g>
+        </svg>
 
-                <!-- Weather Effect Hologram Anchor -->
-                <g id="weather-hologram" transform="translate(145, 75)"></g>
-              </svg>
-            </div>
-          </div>
-        </div>
+        <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Wind Speed</p>
+    </div>
+    <p id="wind-speed" class="font-tech font-bold text-2xl text-[var(--black-30,#121212)] mt-1 transition-colors duration-500 relative z-10">-- km/h</p>
+</div>
+                   <!-- Humidity Node -->
+<div class="interactive-node metric-node group cursor-pointer p-4 flex flex-col gap-2 hover:bg-[var(--black-30,#121212)]">
+    <div class="flex items-center justify-between z-10 relative">
+        <!-- Animated Humidity SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 text-[var(--neon-red)]">
+            <style>
+                .raindrop {
+                    animation: fall 1.5s infinite ease-in;
+                    transform-origin: center bottom;
+                }
+                .splash-ripple {
+                    animation: splash 1.5s infinite ease-out;
+                    transform-origin: center bottom;
+                }
+                .splash-drops {
+                    animation: splash-up 1.5s infinite ease-out;
+                    transform-origin: center bottom;
+                }
 
-        <!-- Metrics Grid -->
-        <div class="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
-          <!-- Wind Node -->
-          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
-            <div class="flex items-center justify-between">
-              <i data-lucide="wind" class="w-5 h-5 text-[var(--neon-red)] idle-spin"></i>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Wind Speed</p>
-            </div>
-            <p id="wind-speed" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">-- km/h</p>
-          </div>
-          
-          <!-- Humidity Node -->
-          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
-            <div class="flex items-center justify-between">
-              <i data-lucide="droplets" class="w-5 h-5 text-[var(--neon-red)] idle-pulse"></i>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Humidity</p>
-            </div>
-            <p id="humidity" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">--%</p>
-          </div>
+                @keyframes fall {
+                    0% { transform: translateY(-8px) scaleY(1); opacity: 0; }
+                    15% { transform: translateY(-4px) scaleY(1.1); opacity: 1; }
+                    60% { transform: translateY(6px) scaleY(1); opacity: 1; }
+                    75% { transform: translateY(8px) scale(1.5, 0.3); opacity: 0; }
+                    100% { transform: translateY(8px) scale(1.5, 0); opacity: 0; }
+                }
 
-          <!-- Pressure Node -->
-          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
-            <div class="flex items-center justify-between">
-              <i data-lucide="gauge" class="w-5 h-5 text-[var(--neon-red)] idle-spin"></i>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pressure</p>
-            </div>
-            <p id="pressure" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">-- hPa</p>
-          </div>
+                @keyframes splash {
+                    0%, 65% { transform: scale(0.5); opacity: 0; stroke-width: 2px; }
+                    75% { transform: scale(1); opacity: 1; stroke-width: 1.5px; }
+                    100% { transform: scale(1.8); opacity: 0; stroke-width: 0.5px; }
+                }
 
-          <!-- Visibility Node -->
-          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
-            <div class="flex items-center justify-between">
-              <i data-lucide="eye" class="w-5 h-5 text-[var(--neon-red)] idle-pulse"></i>
-              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Visibility</p>
-            </div>
-            <p id="visibility" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">-- km</p>
-          </div>
-        </div>
-      </section>
+                @keyframes splash-up {
+                    0%, 65% { transform: translateY(0) scale(0); opacity: 0; }
+                    75% { transform: translateY(-4px) scale(1); opacity: 1; }
+                    100% { transform: translateY(-8px) scale(0); opacity: 0; }
+                }
 
-      <!-- Analytics Array -->
-      <section class="xl:col-span-2 flex flex-col gap-8">
-        <!-- Radar Chart -->
-        <div class="hud-panel p-6 md:p-8 flex-grow">
-          <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
-            <h3 class="text-xl font-tech font-bold text-[var(--carbon-black)] flex items-center gap-3 uppercase tracking-widest">
-              <i data-lucide="activity" class="w-6 h-6 text-[var(--neon-red)] animate-pulse"></i> Thermal Trajectory (24H)
-            </h3>
-          </div>
-          <div id="chart-container">
-            <canvas id="forecastChart"></canvas>
-          </div>
-        </div>
+                /* Hover State: Storm Mode (Rapid Cadence + Neon Flare) */
+                .interactive-node:hover .raindrop {
+                    animation: fall 0.45s infinite ease-in;
+                    fill: #FFF;
+                    filter: drop-shadow(0 0 6px var(--neon-red));
+                }
+                .interactive-node:hover .splash-ripple {
+                    animation: splash 0.45s infinite ease-out;
+                    stroke: #FFF;
+                    filter: drop-shadow(0 0 4px var(--neon-red));
+                }
+                .interactive-node:hover .splash-drops {
+                    animation: splash-up 0.45s infinite ease-out;
+                    fill: #FFF;
+                    filter: drop-shadow(0 0 4px var(--neon-red));
+                }
+            </style>
 
-        <!-- System Status Panel -->
-        <div class="hud-panel bg-[var(--carbon-black)] text-white p-6 md:p-8 flex items-center justify-between border-none">
-          <div class="flex items-center gap-4">
-            <div class="p-3 bg-[var(--neon-red)] rounded-none" style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
-              <i data-lucide="server" class="w-6 h-6 text-white idle-float"></i>
-            </div>
-            <div>
-              <h3 class="font-tech font-bold uppercase tracking-widest text-sm">Open-Meteo Satellite Uplink</h3>
-              <p class="text-xs text-gray-400 mt-1">Extended telemetry currently nominal.</p>
-            </div>
-          </div>
-          <button class="interactive-node px-6 py-2 border border-gray-600 text-gray-300 font-bold text-xs uppercase tracking-widest hover:border-[var(--neon-red)]">
-            Run Diagnostics
-          </button>
-        </div>
-      </section>
+            <!-- Falling Raindrop -->
+            <path class="raindrop" fill="currentColor" d="M12 2c0 0-4.5 6-4.5 9.5a4.5 4.5 0 0 0 9 0C16.5 8 12 2 12 2z"/>
 
-    </main>
-  </div>
+            <!-- Impact Ripple Ring -->
+            <ellipse class="splash-ripple" cx="12" cy="18" rx="5" ry="1.5" fill="none" stroke="currentColor" />
 
-  <script>
-    let chartInstance = null;
+            <!-- Bouncing Splash Droplets -->
+            <g class="splash-drops" fill="currentColor">
+                <circle cx="6" cy="17" r="1.2" />
+                <circle cx="18" cy="17" r="1.2" />
+            </g>
+        </svg>
 
-    function weatherDescription(code) {
-      if (code === 0) return "Optimal Clearance";
-      if ([1, 2, 3].includes(code)) return "Cloud Cover Detected";
-      if ([45, 48].includes(code)) return "Dense Vapor / Fog";
-      if ([51, 53, 55, 56, 57].includes(code)) return "Light Precipitation";
-      if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Heavy Rainfall";
-      if ([95, 96, 99].includes(code)) return "Electrical Storm";
-      return "Anomalous Conditions";
-    }
+        <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Humidity</p>
+    </div>
+    <p id="humidity" class="font-tech font-bold text-2xl text-[var(--carbon-black)] mt-1 transition-colors duration-500 relative z-10">--%</p>
+</div>
+                   <!-- Pressure Node -->
+<div class="interactive-node metric-node group cursor-pointer p-4 flex flex-col gap-2 hover:bg-[var(--black-30,#121212)]">
+    <div class="flex items-center justify-between z-10 relative">
+        <!-- Sci-Fi Pressure Gauge SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 text-[var(--neon-red)]">
+            <style>
+                .gauge-ticks {
+                    stroke: currentColor;
+                    stroke-dasharray: 2.2 1.2;
+                    transition: all 0.3s ease;
+                }
+                .gauge-needle {
+                    transform-origin: 12px 13px;
+                    animation: pressure-idle 3s ease-in-out infinite;
+                    transition: transform 0.3s ease;
+                }
 
-    function updateDragonHologram(code) {
-      const hologramLayer = document.getElementById("weather-hologram");
-      const sun = `<g class="idle-spin"><circle cx="0" cy="0" r="12" fill="none" stroke="#FF2A42" stroke-width="3" stroke-dasharray="6 3"/><circle cx="0" cy="0" r="5" fill="#FF2A42"/></g>`;
-      const cloud = `<g class="idle-float"><path d="M-15,-5 L5,-5 L12,8 L-8,8 Z" fill="#94A3B8" opacity="0.8"/><path d="M-2,-12 L18,-12 L25,0 L2,0 Z" fill="#64748B" opacity="0.9"/></g>`;
-      const rain = `<g class="idle-pulse"><line x1="-8" y1="-8" x2="-15" y2="15" stroke="#00D2FF" stroke-width="2.5"/><line x1="4" y1="-12" x2="-3" y2="20" stroke="#00D2FF" stroke-width="2.5"/><line x1="15" y1="-5" x2="8" y2="15" stroke="#00D2FF" stroke-width="2.5"/></g>`;
+                @keyframes pressure-idle {
+                    0%, 100% { transform: rotate(0deg); }
+                    50% { transform: rotate(18deg); }
+                }
 
-      if (code === 0) hologramLayer.innerHTML = sun;
-      else if ([1, 2, 3, 45, 48].includes(code)) hologramLayer.innerHTML = cloud;
-      else hologramLayer.innerHTML = rain;
-    }
+                /* Hover Overdrive Animation */
+                .interactive-node:hover .gauge-needle {
+                    animation: pressure-sweep 0.4s ease-in-out infinite alternate;
+                    filter: drop-shadow(0 0 6px var(--neon-red));
+                }
 
-    function bindInteractions() {
-      document.querySelectorAll('.interactive-node').forEach(node => {
-        node.removeEventListener('mousedown', addShockwave);
-        node.addEventListener('mousedown', addShockwave);
-      });
-    }
+                .interactive-node:hover .gauge-ticks {
+                    stroke: #FFF;
+                    filter: drop-shadow(0 0 4px var(--neon-red));
+                }
 
-    function addShockwave(e) {
-      const el = e.currentTarget;
-      el.classList.add('click-shockwave');
-      setTimeout(() => el.classList.remove('click-shockwave'), 400);
-    }
+                @keyframes pressure-sweep {
+                    0% { transform: rotate(-45deg); }
+                    100% { transform: rotate(100deg); }
+                }
+            </style>
 
+            <!-- Outer Gauge Circle -->
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.8"/>
+
+            <!-- Arc Ticks matching image reference -->
+            <path class="gauge-ticks" d="M 5.5 16.5 A 8 8 0 1 1 18.5 16.5" fill="none" stroke-width="2.5"/>
+
+            <!-- Center Pivot Pin -->
+            <circle cx="12" cy="13" r="1.8" fill="currentColor"/>
+
+            <!-- Gauge Needle -->
+            <g class="gauge-needle">
+                <path d="M 12 13 L 18 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </g>
+        </svg>
+
+        <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Pressure</p>
+    </div>
+    <p id="pressure" class="font-tech font-bold text-2xl text-[var(--carbon-black)] mt-1 transition-colors duration-500 relative z-10">-- hPa</p>
+</div>
+
+                    <!-- Visibility Node -->
+<div class="interactive-node metric-node group cursor-pointer p-4 flex flex-col gap-2 hover:bg-[var(--black-30,#121212)]" id="visibility-node">
+    <div class="flex items-center justify-between">
+        <!-- Sci-Fi Cybernetic Eye SVG -->
+        <svg id="visibility-eye-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-12 h-12 text-[var(--neon-red)] overflow-visible">
+            <style>
+                /* Natural Periodic Blinking (Idle) */
+                .cyber-eye {
+                    transform-origin: 12px 12px;
+                    animation: eye-blink 4s infinite ease-in-out;
+                }
+
+                @keyframes eye-blink {
+                    0%, 90%, 100% { transform: scaleY(1); }
+                    94% { transform: scaleY(0.08); }
+                    96% { transform: scaleY(1); }
+                    98% { transform: scaleY(0.08); }
+                }
+
+                /* Pupil & Iris Styling */
+                .eye-pupil-group {
+                    transform-origin: 12px 12px;
+                    transition: transform 0.1s ease-out, fill 0.3s ease;
+                }
+
+                .scan-reticle {
+                    opacity: 0;
+                    transform-origin: 12px 12px;
+                    transition: opacity 0.3s ease;
+                }
+
+                /* Hover Overdrive State */
+                .interactive-node:hover .cyber-eye {
+                    animation: none; /* Lock eye open when hovered */
+                    filter: drop-shadow(0 0 6px var(--neon-red));
+                }
+
+                .interactive-node:hover .eye-pupil-core {
+                    fill: #FFF;
+                    filter: drop-shadow(0 0 5px var(--neon-red));
+                }
+
+                .interactive-node:hover .scan-reticle {
+                    opacity: 1;
+                    animation: reticle-spin 3s linear infinite;
+                }
+
+                @keyframes reticle-spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            </style>
+
+            <!-- Outer HUD Scan Reticle (Appears on Hover) -->
+            <circle class="scan-reticle" cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"/>
+
+            <!-- Main Eye Shell (Blinks on Idle) -->
+            <g class="cyber-eye">
+                <!-- Eye Outline -->
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                
+                <!-- Pupil & Iris Assembly (Dynamically tracks mouse) -->
+                <g class="eye-pupil-group" id="eye-pupil-group">
+                    <!-- Iris Ring -->
+                    <circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.2"/>
+                    <!-- Central Pupil Core -->
+                    <circle class="eye-pupil-core" cx="12" cy="12" r="2.2" fill="currentColor"/>
+                </g>
+            </g>
+        </svg>
+
+        <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Visibility</p>
+    </div>
+    <p id="visibility" class="font-tech font-bold text-2xl text-[var(--carbon-black)] mt-1 transition-colors duration-500 relative z-10">-- km</p>
+</div>
+
+<!-- JavaScript for Mouse-Tracking Eye Pupil -->
+<script>
     document.addEventListener("DOMContentLoaded", () => {
-      lucide.createIcons();
-      bindInteractions();
-      fetchWeather("Tokyo");
+        const node = document.getElementById("visibility-node");
+        const pupilGroup = document.getElementById("eye-pupil-group");
 
-      document.getElementById("search-form").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const city = document.getElementById("city-input").value.trim();
-        if (city) fetchWeather(city);
-      });
-    });
+        if (node && pupilGroup) {
+            node.addEventListener("mousemove", (e) => {
+                const rect = node.getBoundingClientRect();
+                // Calculate cursor position relative to the center of the card (-1 to 1 range)
+                const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+                const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
 
-    async function fetchWeather(city) {
-      try {
-        const locationResponse = await fetch(
-          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
-        );
-        if (!locationResponse.ok) throw new Error("Target coordinates not found.");
+                // Move pupil up to 3.5px in direction of mouse
+                const moveX = x * 3.5;
+                const moveY = y * 3.5;
 
-        const locationData = await locationResponse.json();
-        const location = locationData.results?.[0];
-        if (!location) throw new Error(`Location not found: ${city}`);
+                pupilGroup.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
 
-        const weatherResponse = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,weather_code&hourly=temperature_2m&timezone=auto&forecast_days=1`
-        );
-        if (!weatherResponse.ok) throw new Error("Telemetry link severed.");
-
-        const weatherData = await weatherResponse.json();
-        const current = weatherData.current;
-        const hourlyTemps = weatherData.hourly.temperature_2m.slice(0, 8).map(Math.round);
-        const hourlyLabels = weatherData.hourly.time.slice(0, 8).map(time =>
-          new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
-        );
-
-        document.getElementById("city-name").innerText = `${location.name}${location.country_code ? ' // ' + location.country_code : ''}`;
-        document.getElementById("temperature").innerText = `${Math.round(current.temperature_2m)}°`;
-        document.getElementById("weather-desc").innerText = weatherDescription(current.weather_code);
-        document.getElementById("humidity").innerText = `${current.relative_humidity_2m}%`;
-        document.getElementById("wind-speed").innerText = `${current.wind_speed_10m} km/h`;
-        document.getElementById("pressure").innerText = `${Math.round(current.pressure_msl)} hPa`;
-        document.getElementById("visibility").innerText = "10.0 km";
-        document.getElementById("current-date").innerText = `T-MINUS ${new Date().toLocaleTimeString('en-US', { hour12:false })} LOCAL`;
-        
-        updateDragonHologram(current.weather_code);
-        lucide.createIcons();
-        renderChart(hourlyLabels, hourlyTemps);
-        
-      } catch (err) {
-        alert(`SYSTEM ERROR: ${err.message}`);
-        console.error(err);
-      }
-    }
-
-    function renderChart(labels, dataPoints) {
-      const ctx = document.getElementById('forecastChart').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{
-            label: 'Temp (°C)',
-            data: dataPoints,
-            borderColor: '#FF2A42',
-            backgroundColor: 'rgba(255, 42, 66, 0.1)',
-            borderWidth: 3,
-            fill: true,
-            tension: 0.3,
-            pointRadius: 5,
-            pointBackgroundColor: '#0F1115',
-            pointBorderColor: '#FF2A42',
-            pointBorderWidth: 2,
-            pointHoverRadius: 8,
-            pointHoverBackgroundColor: '#FFF',
-            pointHoverBorderColor: '#FF2A42'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgba(15, 17, 21, 0.9)',
-              titleColor: '#F4F6F9',
-              bodyColor: '#FF2A42',
-              borderColor: '#FF2A42',
-              borderWidth: 1,
-              padding: 12,
-              displayColors: false,
-              cornerRadius: 0,
-              titleFont: { family: 'Rajdhani', size: 14, weight: 'bold' },
-              bodyFont: { family: 'Orbitron', size: 18, weight: 'bold' }
-            }
-          },
-          scales: {
-            x: { 
-              grid: { color: 'rgba(15,17,21,0.05)', drawBorder: true, borderColor: '#0F1115' }, 
-              ticks: { color: '#0F1115', font: { family: 'Orbitron', size: 10, weight: 'bold' } } 
-            },
-            y: { 
-              grid: { color: 'rgba(15,17,21,0.05)', borderDash: [5, 5], drawBorder: false }, 
-              ticks: { color: '#0F1115', font: { family: 'Orbitron', size: 12, weight: 'bold' }, padding: 10 } 
-            }
-          },
-          interaction: { intersect: false, mode: 'index' },
-          animation: { duration: 1500, easing: 'easeOutQuart' }
+            node.addEventListener("mouseleave", () => {
+                // Reset pupil to center position when cursor leaves
+                pupilGroup.style.transform = "translate(0px, 0px)";
+            });
         }
-      });
+    });
+</script>
+            <!-- Analytics Array (Right Columns) -->
+            <section class="trajectory-section xl:col-span-3 flex flex-col gap-8">
+                
+                <!-- Radar Chart Container -->
+                <div class="hud-panel trajectory-panel p-6 md:p-8 flex-grow">
+                    <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
+                        <div>
+                            <h3 class="text-xl md:text-2xl font-tech font-bold text-[var(--carbon-black)] flex items-center gap-3 uppercase tracking-widest">
+                                <span class="relative flex w-9 h-9 items-center justify-center text-[var(--neon-red)]">
+                                    <i data-lucide="activity" class="trajectory-icon w-8 h-8"></i>
+                                    <span class="trajectory-icon-ring absolute inset-1 rounded-full border border-[var(--neon-red)] opacity-40"></span>
+                                </span>
+                                Thermal Trajectory (24H)
+                            </h3>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-[0.18em] mt-2 ml-12">Hourly temperature projection // local time</p>
+                        </div>
+                    </div>
+                    <!-- Responsive canvas container for Chart.js -->
+                    <div id="chart-container">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- System Status Panel -->
+                <div class="hud-panel bg-[var(--carbon-black)] text-white p-6 md:p-8 flex items-center justify-between border-none">
+                    <div class="flex items-center gap-4">
+                        <div class="p-3 bg-[var(--neon-red)] rounded-none" style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
+                            <i data-lucide="server" class="w-6 h-6 text-white idle-float"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-tech font-bold uppercase tracking-widest text-sm">Open-Meteo Satellite Uplink</h3>
+                            <p id="system-status" class="text-xs text-gray-400 mt-1" role="status" aria-live="polite">Extended telemetry currently nominal.</p>
+                        </div>
+                    </div>
+                    <button id="diagnostics-button" type="button" class="interactive-node px-6 py-2 border border-gray-600 text-gray-300 font-bold text-xs uppercase tracking-widest hover:border-[var(--neon-red)]" aria-describedby="system-status">
+                        Run Diagnostics
+                    </button>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+    // Dynamically scales the wind animation speed based on telemetry
+function updateWindVelocity(speedKmh) {
+    const windNode = document.getElementById("wind-node");
+    const windDisplay = document.getElementById("wind-speed");
+
+    if (windDisplay) {
+        windDisplay.innerText = `${speedKmh.toFixed(1)} km/h`;
     }
-  </script>
+
+    if (windNode) {
+        // Clamp wind speed between 2 km/h (gentle breeze) and 100 km/h (storm)
+        const clampedSpeed = Math.max(2, Math.min(speedKmh, 100));
+
+        // Invert mapping: higher km/h results in shorter duration (faster flow)
+        // 2 km/h = ~3.2s duration (slow) | 100 km/h = ~0.35s duration (hyper-fast)
+        const durationSeconds = (3.4 - (clampedSpeed / 100) * 3.05).toFixed(2);
+
+        // Update the CSS custom variable directly on the node
+        windNode.style.setProperty("--wind-duration", `${durationSeconds}s`);
+    }
+}
+        let chartInstance = null; // Global reference for Chart.js to allow destroy/rebuild
+        let requestSequence = 0;
+
+        // Maps Open-Meteo WMO weather codes to sci-fi/technical descriptions
+        function weatherDescription(code) {
+            if (code === 0) return "Optimal Clearance";
+            if ([1, 2, 3].includes(code)) return "Cloud Cover Detected";
+            if ([45, 48].includes(code)) return "Dense Vapor / Fog";
+            if ([51, 53, 55, 56, 57].includes(code)) return "Light Precipitation";
+            if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Heavy Rainfall";
+            if ([95, 96, 99].includes(code)) return "Electrical Storm";
+            return "Anomalous Conditions";
+        }
+
+        // Dynamically injects SVG weather animations into the Mecha Dragon based on WMO code
+        function updateDragonHologram(code) {
+            const hologramLayer = document.getElementById("weather-hologram");
+            
+            const sun = `<g class="idle-spin"><circle cx="0" cy="0" r="12" fill="none" stroke="#FF2A42" stroke-width="3" stroke-dasharray="6 3"/><circle cx="0" cy="0" r="5" fill="#FF2A42"/></g>`;
+            const cloud = `<g class="idle-float"><path d="M-15,-5 L5,-5 L12,8 L-8,8 Z" fill="#94A3B8" opacity="0.8"/><path d="M-2,-12 L18,-12 L25,0 L2,0 Z" fill="#64748B" opacity="0.9"/></g>`;
+            const rain = `<g class="idle-pulse"><line x1="-8" y1="-8" x2="-15" y2="15" stroke="#00D2FF" stroke-width="2.5"/><line x1="4" y1="-12" x2="-3" y2="20" stroke="#00D2FF" stroke-width="2.5"/><line x1="15" y1="-5" x2="8" y2="15" stroke="#00D2FF" stroke-width="2.5"/></g>`;
+            
+            if (code === 0) hologramLayer.innerHTML = sun;
+            else if ([1, 2, 3, 45, 48].includes(code)) hologramLayer.innerHTML = cloud;
+            else hologramLayer.innerHTML = rain;
+        }
+
+        // Applies visual shockwave feedback to all nodes designated as interactive
+        function bindInteractions() {
+            document.querySelectorAll('.interactive-node').forEach(node => {
+                node.removeEventListener('mousedown', addShockwave);
+                node.addEventListener('mousedown', addShockwave);
+            });
+        }
+
+        // Executes the shockwave CSS animation
+        function addShockwave(e) {
+            const el = e.currentTarget;
+            el.classList.add('click-shockwave');
+            setTimeout(() => el.classList.remove('click-shockwave'), 400); // Remove class after animation completes
+        }
+
+        async function runDiagnostics() {
+            const button = document.getElementById("diagnostics-button");
+            const status = document.getElementById("system-status");
+            const requiredElements = [
+                "city-name",
+                "temperature",
+                "wind-speed",
+                "humidity",
+                "pressure",
+                "visibility",
+                "forecastChart"
+            ];
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+
+            if (!button || !status) return;
+
+            button.disabled = true;
+            button.innerText = "Checking...";
+            status.innerText = "Running system diagnostics...";
+
+            try {
+                if (missingElements.length) {
+                    throw new Error(`Missing module: ${missingElements.join(", ")}`);
+                }
+
+                if (!chartInstance) {
+                    throw new Error("Thermal chart is not initialized");
+                }
+
+                const response = await fetch(
+                    "https://api.open-meteo.com/v1/forecast?latitude=35&longitude=139&current=temperature_2m&forecast_days=1",
+                    { method: "GET", cache: "no-store" }
+                );
+                if (!response.ok) throw new Error("Open-Meteo uplink unavailable");
+
+                status.innerText = "Diagnostics complete // all systems nominal";
+            } catch (error) {
+                status.innerText = `Diagnostics warning // ${error.message}`;
+                console.error(error);
+            } finally {
+                button.disabled = false;
+                button.innerText = "Run Diagnostics";
+            }
+        }
+
+        // Application Initialization Lifecycle
+        document.addEventListener("DOMContentLoaded", () => {
+            lucide.createIcons(); // Initialize Lucide SVGs
+            bindInteractions(); // Setup haptic UI events
+            fetchWeather("Tokyo"); // Default initial target location
+
+            // Setup search form handler
+            document.getElementById("search-form").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const city = document.getElementById("city-input").value.trim();
+                if (city) fetchWeather(city);
+            });
+
+            document.getElementById("diagnostics-button").addEventListener("click", runDiagnostics);
+        });
+
+        // Core data fetching routine utilizing the Open-Meteo Geocoding & Weather APIs
+        async function fetchWeather(city) {
+            const requestId = ++requestSequence;
+            const status = document.getElementById("system-status");
+
+            try {
+                if (status) status.innerText = `Acquiring telemetry for ${city}...`;
+                // Step 1: Geocode the string query to Latitude/Longitude
+                const locationResponse = await fetch(
+                    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
+                );
+                if (!locationResponse.ok) throw new Error("Target coordinates not found.");
+                
+                const locationData = await locationResponse.json();
+                const location = locationData.results?.[0];
+                if (!location) throw new Error(`Location not found: ${city}`);
+
+                // Step 2: Fetch current condition telemetry and hourly forecasts
+                const weatherResponse = await fetch(
+                    `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,weather_code,visibility&hourly=temperature_2m&timezone=auto&forecast_days=1`
+                );
+                if (!weatherResponse.ok) throw new Error("Telemetry link severed.");
+                
+                const weatherData = await weatherResponse.json();
+                const current = weatherData.current;
+
+                if (requestId !== requestSequence) return;
+                
+                // Parse the full day using the location's local timestamps from Open-Meteo.
+                const hourlyTemps = weatherData.hourly.temperature_2m.slice(0, 24).map(Math.round);
+                const hourlyLabels = weatherData.hourly.time.slice(0, 24).map(time => time.split("T")[1].slice(0, 5));
+
+                // Step 3: Hydrate DOM components with live data
+                document.getElementById("city-name").innerText = `${location.name}${location.country_code ? ' // ' + location.country_code : ''}`;
+                document.getElementById("temperature").innerText = `${Math.round(current.temperature_2m)}°`;
+                document.getElementById("weather-desc").innerText = weatherDescription(current.weather_code);
+                document.getElementById("humidity").innerText = `${current.relative_humidity_2m}%`;
+                updateWindVelocity(current.wind_speed_10m);
+                document.getElementById("pressure").innerText = `${Math.round(current.pressure_msl)} hPa`;
+                document.getElementById("visibility").innerText = current.visibility == null
+                    ? "-- km"
+                    : `${(current.visibility / 1000).toFixed(1)} km`;
+                document.getElementById("current-date").innerText = `T-MINUS ${new Date().toLocaleTimeString('en-US', { hour12:false })} LOCAL`;
+                if (status) status.innerText = `Telemetry nominal // ${location.timezone_abbreviation || location.timezone}`;
+
+                // Update dynamic visuals
+                updateDragonHologram(current.weather_code);
+                lucide.createIcons();
+                
+                // Render the interactive thermal trajectory chart
+                renderChart(hourlyLabels, hourlyTemps);
+                
+            } catch (err) {
+                if (requestId !== requestSequence) return;
+                if (status) status.innerText = `Telemetry error // ${err.message}`;
+                console.error(err);
+            }
+        }
+
+        // Initializes and configures the Sci-Fi styled Chart.js curve
+        function renderChart(labels, dataPoints) {
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            
+            // Destroy existing instance to prevent visual overlapping on subsequent searches
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Temp (°C)',
+                        data: dataPoints,
+                        borderColor: '#FF2A42', // Neon Red line
+                        backgroundColor: 'rgba(255, 42, 66, 0.1)', // Subtle red fill beneath the curve
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.3, // Smooth bézier curve
+                        pointRadius: 5,
+                        pointBackgroundColor: '#0F1115',
+                        pointBorderColor: '#FF2A42',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 8,
+                        pointHoverBackgroundColor: '#FFF',
+                        pointHoverBorderColor: '#FF2A42'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allows canvas to stretch within container
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 17, 21, 0.9)',
+                            titleColor: '#F4F6F9',
+                            bodyColor: '#FF2A42',
+                            borderColor: '#FF2A42',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            cornerRadius: 0, // Sharp corners to match mechanical UI theme
+                            titleFont: { family: 'Rajdhani', size: 14, weight: 'bold' },
+                            bodyFont: { family: 'Orbitron', size: 18, weight: 'bold' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { 
+                                color: 'rgba(15,17,21,0.05)', 
+                                drawBorder: true, 
+                                borderColor: '#0F1115' 
+                            },
+                            ticks: { 
+                                color: '#0F1115', 
+                                font: { family: 'Orbitron', size: 10, weight: 'bold' } 
+                            }
+                        },
+                        y: {
+                            grid: { 
+                                color: 'rgba(15,17,21,0.05)', 
+                                borderDash: [5, 5], // Dotted lines for technical layout
+                                drawBorder: false 
+                            },
+                            ticks: { 
+                                color: '#0F1115', 
+                                font: { family: 'Orbitron', size: 12, weight: 'bold' }, 
+                                padding: 10 
+                            }
+                        }
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+    </script>
 </body>
 </html>

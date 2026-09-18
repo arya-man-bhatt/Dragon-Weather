@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atmosphere Intelligence - Nexus Build</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --mech-white: #F4F6F9;
+      --carbon-black: #0F1115;
+      --neon-red: #FF2A42;
+      --neon-red-glow: rgba(255, 42, 66, 0.6);
+      --hud-glass: rgba(255, 255, 255, 0.85);
+    }
+
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background-color: var(--mech-white);
+      color: var(--carbon-black);
+      background-image: 
+        linear-gradient(rgba(15, 17, 21, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 17, 21, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      overflow-x: hidden;
+    }
+
+    h1, h2, h3, .font-tech { font-family: 'Orbitron', sans-serif; }
+
+    /* Sci-Fi Angled Card UI */
+    .hud-panel {
+      background: var(--hud-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(15, 17, 21, 0.1);
+      clip-path: polygon(0 15px, 15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+    }
+    
+    .hud-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 3px;
+      background: var(--neon-red);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s ease;
+    }
+
+    .hud-panel:hover {
+      transform: translateY(-5px) scale(1.01);
+      box-shadow: 0 15px 40px rgba(255, 42, 66, 0.15);
+      border-color: rgba(255, 42, 66, 0.3);
+    }
+    
+    .hud-panel:hover::before { transform: scaleX(1); }
+
+    /* Interactive Node States (Hover & Click) */
+    .interactive-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    /* Default continuous idle animations */
+    .idle-spin { animation: spin 10s linear infinite; }
+    .idle-pulse { animation: pulse 3s ease-in-out infinite; }
+    .idle-float { animation: float 4s ease-in-out infinite; }
+
+    /* Exaggerated Hover States */
+    .interactive-node:hover .idle-spin { animation: spin 1s linear infinite; color: var(--neon-red); transform: scale(1.2); }
+    .interactive-node:hover .idle-pulse { animation: pulse 0.5s ease-in-out infinite; color: var(--neon-red); filter: drop-shadow(0 0 8px var(--neon-red)); }
+    .interactive-node:hover {
+      background: var(--carbon-black);
+      color: var(--mech-white);
+      border-color: var(--neon-red);
+      transform: scale(1.05);
+      box-shadow: 0 0 20px var(--neon-red-glow);
+    }
+    .interactive-node:hover * { color: var(--mech-white); }
+    .interactive-node:hover i { color: var(--neon-red); }
+
+    /* Click Reaction */
+    .interactive-node:active {
+      transform: scale(0.92);
+      box-shadow: 0 0 5px var(--neon-red-glow);
+    }
+    .click-shockwave {
+      animation: shockwave 0.4s ease-out forwards;
+    }
+
+    /* Keyframes */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%, 100% { opacity: 0.8; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes shockwave {
+      0% { box-shadow: 0 0 0 0 rgba(255, 42, 66, 0.8); }
+      100% { box-shadow: 0 0 0 30px rgba(255, 42, 66, 0); }
+    }
+
+    /* Robotic Dragon Reference Animations */
+    .mecha-dragon-body {
+      transform-origin: center;
+      animation: float 6s ease-in-out infinite;
+    }
+    .mecha-jaw {
+      transform-origin: 100px 115px;
+      animation: jaw-breathe 4s ease-in-out infinite;
+      transition: all 0.3s;
+    }
+    .mecha-eye {
+      fill: var(--neon-red);
+      filter: drop-shadow(0 0 5px var(--neon-red));
+      animation: eye-glitch 5s infinite;
+      transition: all 0.2s;
+    }
+    
+    /* Dragon Hover & Click */
+    #dragon-container:hover .mecha-jaw { transform: rotate(12deg); }
+    #dragon-container:hover .mecha-eye { fill: #FFF; filter: drop-shadow(0 0 15px var(--neon-red)); transform: scale(1.3); }
+    #dragon-container:hover .mecha-dragon-body { animation: shake 0.5s infinite; }
+    #dragon-container:active .mecha-jaw { transform: rotate(20deg); }
+
+    @keyframes jaw-breathe { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(3deg); } }
+    @keyframes eye-glitch { 
+      0%, 96%, 100% { opacity: 1; transform: scale(1); } 
+      97% { opacity: 0; transform: scale(1.2); } 
+      98% { opacity: 1; transform: scale(0.8); } 
+    }
+    @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(1px, -1px); } 75% { transform: translate(-1px, 1px); } }
+
+    /* Custom Chart Tooltip */
+    #chart-container { position: relative; height: 260px; width: 100%; }
+
+    /* Scanline overlay for the dark header */
+    .scanline {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(to bottom, transparent, rgba(255,42,66,0.1), transparent);
+      animation: scan 3s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+  <div class="max-w-7xl w-full space-y-8 relative z-10">
+
+    <!-- Header Module -->
+    <header class="bg-gradient-to-r from-[var(--carbon-black)] to-[#1A1D24] text-[var(--mech-white)] clip-path-panel p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden rounded-xl border border-gray-800 shadow-2xl">
+      <div class="scanline"></div>
+      
+      <div class="flex items-center gap-5 z-10 interactive-node p-2 rounded-lg">
+        <!-- Animated Header Logo -->
+        <div class="relative w-14 h-14 bg-[var(--mech-white)] flex items-center justify-center text-[var(--carbon-black)] transform rotate-45 border-2 border-[var(--neon-red)]">
+          <i data-lucide="cpu" class="w-7 h-7 transform -rotate-45 idle-spin"></i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-tech font-black tracking-widest uppercase">
+            Atmosphere <span class="text-[var(--neon-red)]">Intel</span>
+          </h1>
+          <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Nexus Command Terminal</p>
+        </div>
+      </div>
+
+      <form id="search-form" class="flex w-full md:w-auto gap-3 z-10">
+        <div class="relative flex-grow md:w-80 group">
+          <input 
+            type="text" 
+            id="city-input" 
+            placeholder="Initialize coordinates..." 
+            class="w-full bg-[#0A0C0F] border border-gray-700 text-[var(--mech-white)] pl-12 pr-4 py-3.5 placeholder-gray-600 focus:outline-none focus:border-[var(--neon-red)] transition-all font-bold tracking-wide uppercase text-sm rounded-none"
+            style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);"
+          />
+          <i data-lucide="crosshair" class="w-5 h-5 absolute left-4 top-3.5 text-[var(--neon-red)] group-focus-within:animate-spin"></i>
+        </div>
+        <button 
+          type="submit" 
+          class="interactive-node bg-[var(--neon-red)] text-[var(--mech-white)] px-8 py-3.5 font-tech font-bold uppercase tracking-widest flex items-center gap-2"
+          style="clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);">
+          <i data-lucide="satellite" class="w-4 h-4"></i> Scan
+        </button>
+      </form>
+    </header>
+
+    <!-- Dashboard Grid -->
+    <main class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+      <!-- Weather Core Unit -->
+      <section class="xl:col-span-1 hud-panel p-8 flex flex-col justify-between" id="core-card">
+        
+        <div>
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h2 id="city-name" class="text-4xl font-tech font-black text-[var(--carbon-black)] uppercase tracking-tight">System Boot...</h2>
+              <p id="current-date" class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Acquiring temporal data</p>
+            </div>
+            <span class="px-3 py-1 text-[10px] font-bold bg-[var(--carbon-black)] text-[var(--neon-red)] tracking-widest uppercase flex items-center gap-2" style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--neon-red)] animate-ping"></span> Live feed
+            </span>
+          </div>
+
+          <!-- Mecha Dragon Projection Area -->
+          <div class="my-8 flex items-center justify-between relative">
+            <div class="z-10">
+              <div id="temperature" class="text-7xl font-tech font-black text-[var(--carbon-black)] tracking-tighter">--°</div>
+              <p id="weather-desc" class="text-md font-bold text-gray-600 mt-2 uppercase tracking-widest flex items-center gap-2">
+                --
+              </p>
+            </div>
+            
+            <!-- Interactive Robotic Dragon SVG (Based on Reference Image) -->
+            <div id="dragon-container" class="w-40 h-40 interactive-node flex justify-center items-center rounded-full bg-gray-100 p-1 shadow-inner border border-gray-200" title="Click to interact with Core">
+              <svg viewBox="0 0 200 200" class="mecha-dragon-body w-full h-full drop-shadow-xl z-20">
+                <!-- Back Spikes & Plating -->
+                <polygon points="120,50 145,25 135,60" fill="#CBD5E1" stroke="#0F1115" stroke-width="1.5"/>
+                <polygon points="135,40 165,15 150,55" fill="#94A3B8" stroke="#0F1115" stroke-width="1.5"/>
+                <polygon points="150,30 185,10 165,50" fill="#CBD5E1" stroke="#0F1115" stroke-width="1.5"/>
+                
+                <!-- Main Body / Torso Shell -->
+                <path d="M 110 100 Q 150 120 140 170 L 100 170 Q 90 130 110 100 Z" fill="#1E293B" stroke="#0F1115" stroke-width="2"/>
+                <!-- Shoulder Armor Joint -->
+                <circle cx="130" cy="130" r="12" fill="#E2E8F0" stroke="#FF2A42" stroke-width="2"/>
+                <circle cx="130" cy="130" r="5" fill="#0F1115"/>
+
+                <!-- Forelimb / Claws -->
+                <path d="M 120 150 L 140 185 L 125 190 L 115 170 Z" fill="#CBD5E1" stroke="#0F1115" stroke-width="2"/>
+                <path d="M 105 160 L 115 195 L 100 198 L 95 175 Z" fill="#94A3B8" stroke="#0F1115" stroke-width="2"/>
+
+                <!-- Main Head Structure -->
+                <path d="M 70 80 L 110 50 L 135 85 L 115 115 L 75 110 Z" fill="#0F1115" stroke="#FF2A42" stroke-width="2.5" stroke-linejoin="round"/>
+                <!-- Snout Plate -->
+                <path d="M 45 90 L 75 80 L 75 110 L 50 115 Z" fill="#334155" stroke="#0F1115" stroke-width="2"/>
+                
+                <!-- Robotic Eye -->
+                <polygon points="90,75 108,70 102,88 88,85" class="mecha-eye"/>
+                <circle cx="98" cy="78" r="2.5" fill="#FFF" />
+
+                <!-- Articulated Jaw Assembly -->
+                <g class="mecha-jaw">
+                  <path d="M 50 115 L 115 115 L 100 140 L 60 135 Z" fill="#1E293B" stroke="#FF2A42" stroke-width="2"/>
+                  <!-- Grill Lines / Tech Accents -->
+                  <line x1="70" y1="120" x2="73" y2="132" stroke="#F4F6F9" stroke-width="2"/>
+                  <line x1="85" y1="122" x2="88" y2="135" stroke="#F4F6F9" stroke-width="2"/>
+                </g>
+
+                <!-- Weather Effect Hologram Anchor -->
+                <g id="weather-hologram" transform="translate(145, 75)"></g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="grid grid-cols-2 gap-4 pt-6 border-t border-gray-200">
+          <!-- Wind Node -->
+          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
+            <div class="flex items-center justify-between">
+              <i data-lucide="wind" class="w-5 h-5 text-[var(--neon-red)] idle-spin"></i>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Wind Speed</p>
+            </div>
+            <p id="wind-speed" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">-- km/h</p>
+          </div>
+          
+          <!-- Humidity Node -->
+          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
+            <div class="flex items-center justify-between">
+              <i data-lucide="droplets" class="w-5 h-5 text-[var(--neon-red)] idle-pulse"></i>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Humidity</p>
+            </div>
+            <p id="humidity" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">--%</p>
+          </div>
+
+          <!-- Pressure Node -->
+          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
+            <div class="flex items-center justify-between">
+              <i data-lucide="gauge" class="w-5 h-5 text-[var(--neon-red)] idle-spin"></i>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pressure</p>
+            </div>
+            <p id="pressure" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">-- hPa</p>
+          </div>
+
+          <!-- Visibility Node -->
+          <div class="interactive-node bg-white p-4 border border-gray-200 flex flex-col gap-2" style="clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);">
+            <div class="flex items-center justify-between">
+              <i data-lucide="eye" class="w-5 h-5 text-[var(--neon-red)] idle-pulse"></i>
+              <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Visibility</p>
+            </div>
+            <p id="visibility" class="font-tech font-bold text-xl text-[var(--carbon-black)] mt-1">-- km</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Array -->
+      <section class="xl:col-span-2 flex flex-col gap-8">
+        <!-- Radar Chart -->
+        <div class="hud-panel p-6 md:p-8 flex-grow">
+          <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
+            <h3 class="text-xl font-tech font-bold text-[var(--carbon-black)] flex items-center gap-3 uppercase tracking-widest">
+              <i data-lucide="activity" class="w-6 h-6 text-[var(--neon-red)] animate-pulse"></i> Thermal Trajectory (24H)
+            </h3>
+          </div>
+          <div id="chart-container">
+            <canvas id="forecastChart"></canvas>
+          </div>
+        </div>
+
+        <!-- System Status Panel -->
+        <div class="hud-panel bg-[var(--carbon-black)] text-white p-6 md:p-8 flex items-center justify-between border-none">
+          <div class="flex items-center gap-4">
+            <div class="p-3 bg-[var(--neon-red)] rounded-none" style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
+              <i data-lucide="server" class="w-6 h-6 text-white idle-float"></i>
+            </div>
+            <div>
+              <h3 class="font-tech font-bold uppercase tracking-widest text-sm">Open-Meteo Satellite Uplink</h3>
+              <p class="text-xs text-gray-400 mt-1">Extended telemetry currently nominal.</p>
+            </div>
+          </div>
+          <button class="interactive-node px-6 py-2 border border-gray-600 text-gray-300 font-bold text-xs uppercase tracking-widest hover:border-[var(--neon-red)]">
+            Run Diagnostics
+          </button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    let chartInstance = null;
+
+    function weatherDescription(code) {
+      if (code === 0) return "Optimal Clearance";
+      if ([1, 2, 3].includes(code)) return "Cloud Cover Detected";
+      if ([45, 48].includes(code)) return "Dense Vapor / Fog";
+      if ([51, 53, 55, 56, 57].includes(code)) return "Light Precipitation";
+      if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "Heavy Rainfall";
+      if ([95, 96, 99].includes(code)) return "Electrical Storm";
+      return "Anomalous Conditions";
+    }
+
+    function updateDragonHologram(code) {
+      const hologramLayer = document.getElementById("weather-hologram");
+      const sun = `<g class="idle-spin"><circle cx="0" cy="0" r="12" fill="none" stroke="#FF2A42" stroke-width="3" stroke-dasharray="6 3"/><circle cx="0" cy="0" r="5" fill="#FF2A42"/></g>`;
+      const cloud = `<g class="idle-float"><path d="M-15,-5 L5,-5 L12,8 L-8,8 Z" fill="#94A3B8" opacity="0.8"/><path d="M-2,-12 L18,-12 L25,0 L2,0 Z" fill="#64748B" opacity="0.9"/></g>`;
+      const rain = `<g class="idle-pulse"><line x1="-8" y1="-8" x2="-15" y2="15" stroke="#00D2FF" stroke-width="2.5"/><line x1="4" y1="-12" x2="-3" y2="20" stroke="#00D2FF" stroke-width="2.5"/><line x1="15" y1="-5" x2="8" y2="15" stroke="#00D2FF" stroke-width="2.5"/></g>`;
+
+      if (code === 0) hologramLayer.innerHTML = sun;
+      else if ([1, 2, 3, 45, 48].includes(code)) hologramLayer.innerHTML = cloud;
+      else hologramLayer.innerHTML = rain;
+    }
+
+    function bindInteractions() {
+      document.querySelectorAll('.interactive-node').forEach(node => {
+        node.removeEventListener('mousedown', addShockwave);
+        node.addEventListener('mousedown', addShockwave);
+      });
+    }
+
+    function addShockwave(e) {
+      const el = e.currentTarget;
+      el.classList.add('click-shockwave');
+      setTimeout(() => el.classList.remove('click-shockwave'), 400);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      bindInteractions();
+      fetchWeather("Tokyo");
+
+      document.getElementById("search-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const city = document.getElementById("city-input").value.trim();
+        if (city) fetchWeather(city);
+      });
+    });
+
+    async function fetchWeather(city) {
+      try {
+        const locationResponse = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`
+        );
+        if (!locationResponse.ok) throw new Error("Target coordinates not found.");
+
+        const locationData = await locationResponse.json();
+        const location = locationData.results?.[0];
+        if (!location) throw new Error(`Location not found: ${city}`);
+
+        const weatherResponse = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,weather_code&hourly=temperature_2m&timezone=auto&forecast_days=1`
+        );
+        if (!weatherResponse.ok) throw new Error("Telemetry link severed.");
+
+        const weatherData = await weatherResponse.json();
+        const current = weatherData.current;
+        const hourlyTemps = weatherData.hourly.temperature_2m.slice(0, 8).map(Math.round);
+        const hourlyLabels = weatherData.hourly.time.slice(0, 8).map(time =>
+          new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })
+        );
+
+        document.getElementById("city-name").innerText = `${location.name}${location.country_code ? ' // ' + location.country_code : ''}`;
+        document.getElementById("temperature").innerText = `${Math.round(current.temperature_2m)}°`;
+        document.getElementById("weather-desc").innerText = weatherDescription(current.weather_code);
+        document.getElementById("humidity").innerText = `${current.relative_humidity_2m}%`;
+        document.getElementById("wind-speed").innerText = `${current.wind_speed_10m} km/h`;
+        document.getElementById("pressure").innerText = `${Math.round(current.pressure_msl)} hPa`;
+        document.getElementById("visibility").innerText = "10.0 km";
+        document.getElementById("current-date").innerText = `T-MINUS ${new Date().toLocaleTimeString('en-US', { hour12:false })} LOCAL`;
+        
+        updateDragonHologram(current.weather_code);
+        lucide.createIcons();
+        renderChart(hourlyLabels, hourlyTemps);
+        
+      } catch (err) {
+        alert(`SYSTEM ERROR: ${err.message}`);
+        console.error(err);
+      }
+    }
+
+    function renderChart(labels, dataPoints) {
+      const ctx = document.getElementById('forecastChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Temp (°C)',
+            data: dataPoints,
+            borderColor: '#FF2A42',
+            backgroundColor: 'rgba(255, 42, 66, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5,
+            pointBackgroundColor: '#0F1115',
+            pointBorderColor: '#FF2A42',
+            pointBorderWidth: 2,
+            pointHoverRadius: 8,
+            pointHoverBackgroundColor: '#FFF',
+            pointHoverBorderColor: '#FF2A42'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: 'rgba(15, 17, 21, 0.9)',
+              titleColor: '#F4F6F9',
+              bodyColor: '#FF2A42',
+              borderColor: '#FF2A42',
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false,
+              cornerRadius: 0,
+              titleFont: { family: 'Rajdhani', size: 14, weight: 'bold' },
+              bodyFont: { family: 'Orbitron', size: 18, weight: 'bold' }
+            }
+          },
+          scales: {
+            x: { 
+              grid: { color: 'rgba(15,17,21,0.05)', drawBorder: true, borderColor: '#0F1115' }, 
+              ticks: { color: '#0F1115', font: { family: 'Orbitron', size: 10, weight: 'bold' } } 
+            },
+            y: { 
+              grid: { color: 'rgba(15,17,21,0.05)', borderDash: [5, 5], drawBorder: false }, 
+              ticks: { color: '#0F1115', font: { family: 'Orbitron', size: 12, weight: 'bold' }, padding: 10 } 
+            }
+          },
+          interaction: { intersect: false, mode: 'index' },
+          animation: { duration: 1500, easing: 'easeOutQuart' }
+        }
+      });
+    }
+  </script>
+</body>
+</html>

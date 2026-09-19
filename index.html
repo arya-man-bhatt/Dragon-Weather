@@ -12,8 +12,9 @@
     
     <!-- Typography: Orbitron for tech/headers, Rajdhani for readable body text -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
     
-    <style>
+    <style media="not all">
         /* Global Custom Properties (Color Palette & Effects) */
         :root {
             --mech-white: #F4F6F9;
@@ -21,6 +22,10 @@
             --neon-red: #FF2A42;
             --neon-red-glow: rgba(255, 42, 66, 0.6);
             --hud-glass: rgba(255, 255, 255, 0.85); /* Glassmorphic base for card architecture */
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
         }
 
         body {
@@ -536,6 +541,22 @@
         @media (max-width: 767px) {
             #chart-container { height: 300px; }
             .trajectory-panel { min-height: 410px; }
+        }
+
+        @media (min-width: 768px) and (max-width: 1279px) {
+            body { padding: 1rem; }
+            .max-w-7xl { max-width: 100%; }
+            header { padding: 1.25rem; gap: 1rem; }
+            #search-form { max-width: 520px; }
+            main { gap: 1.25rem; }
+            #core-card { padding: 1.25rem; }
+            #core-card .my-8 { margin-top: 1.25rem; margin-bottom: 1.25rem; }
+            #dragon-container { width: 8rem; height: 8rem; }
+            #temperature { font-size: 4rem; }
+            #core-card .grid { gap: 0.75rem; }
+            #core-card .metric-node { padding: 0.75rem; }
+            .trajectory-panel { min-height: 390px; }
+            #chart-container { height: 280px; }
         }
 
         /* Terminal-style Scanline overlay for the top header */
@@ -1073,7 +1094,7 @@
 </div>
 
 <!-- JavaScript for Mouse-Tracking Eye Pupil -->
-<script>
+<script type="application/disabled">
     document.addEventListener("DOMContentLoaded", () => {
         const node = document.getElementById("visibility-node");
         const pupilGroup = document.getElementById("eye-pupil-group");
@@ -1143,7 +1164,7 @@
     </div>
 
     <!-- Application Logic -->
-    <script>
+    <script type="application/disabled">
     // Dynamically scales the wind animation speed based on telemetry
 function updateWindVelocity(speedKmh) {
     const windNode = document.getElementById("wind-node");
@@ -1407,5 +1428,6 @@ function updateWindVelocity(speedKmh) {
             });
         }
     </script>
+    <script src="script.js"></script>
 </body>
 </html>

@@ -118,6 +118,9 @@ async function fetchWeather(city) {
 function renderChart(labels, dataPoints) {
     const ctx = document.getElementById('forecastChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
+    const theme = getComputedStyle(document.documentElement);
+    const chartText = theme.getPropertyValue('--chart-text').trim();
+    const chartGrid = theme.getPropertyValue('--chart-grid').trim();
 
     chartInstance = new Chart(ctx, {
         type: 'line',
@@ -129,16 +132,81 @@ function renderChart(labels, dataPoints) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(15, 17, 21, 0.9)', titleColor: '#F4F6F9', bodyColor: '#FF2A42', borderColor: '#FF2A42', borderWidth: 1, padding: 12, displayColors: false, cornerRadius: 0, titleFont: { family: 'Rajdhani', size: 14, weight: 'bold' }, bodyFont: { family: 'Orbitron', size: 18, weight: 'bold' } } },
-            scales: { x: { grid: { color: 'rgba(15,17,21,0.05)', drawBorder: true, borderColor: '#0F1115' }, ticks: { color: '#0F1115', font: { family: 'Orbitron', size: 10, weight: 'bold' } } }, y: { grid: { color: 'rgba(15,17,21,0.05)', borderDash: [5, 5], drawBorder: false }, ticks: { color: '#0F1115', font: { family: 'Orbitron', size: 12, weight: 'bold' }, padding: 10 } } },
+            scales: { x: { grid: { color: chartGrid, drawBorder: true, borderColor: chartGrid }, ticks: { color: chartText, font: { family: 'Orbitron', size: 10, weight: 'bold' } } }, y: { grid: { color: chartGrid, borderDash: [5, 5], drawBorder: false }, ticks: { color: chartText, font: { family: 'Orbitron', size: 12, weight: 'bold' }, padding: 10 } } },
             interaction: { intersect: false, mode: 'index' },
             animation: { duration: 1500, easing: 'easeOutQuart' }
         }
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function setTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    const toggle = document.getElementById('theme-toggle');
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+
+    if (toggle) {
+        toggle.setAttribute('aria-label', `Switch to ${nextTheme} mode`);
+        toggle.title = `Switch to ${nextTheme} mode`;
+        toggle.innerHTML = `<i data-lucide="${theme === 'dark' ? 'sun' : 'moon'}" aria-hidden="true"></i>`;
+        lucide.createIcons();
+    }
+
+    try {
+        localStorage.setItem('weather-dashboard-theme', theme);
+    } catch (error) {
+        console.warn('Theme preference could not be saved.', error);
+    }
+
+    if (chartInstance) {
+        const styles = getComputedStyle(document.documentElement);
+        const textColor = styles.getPropertyValue('--chart-text').trim();
+        const gridColor = styles.getPropertyValue('--chart-grid').trim();
+        chartInstance.options.scales.x.ticks.color = textColor;
+        chartInstance.options.scales.x.grid.color = gridColor;
+        chartInstance.options.scales.x.grid.borderColor = gridColor;
+        chartInstance.options.scales.y.ticks.color = textColor;
+        chartInstance.options.scales.y.grid.color = gridColor;
+        chartInstance.update('none');
+    }
+}
+
+async function loadHeaderBar() {
+    const mount = document.getElementById("header-bar");
+    if (!mount) return false;
+
+    const response = await fetch("header-bar.html");
+    if (!response.ok) throw new Error("Header component could not be loaded");
+    mount.innerHTML = await response.text();
+    return true;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        await loadHeaderBar();
+    } catch (error) {
+        console.error(error);
+        return;
+    }
+
     lucide.createIcons();
     bindInteractions();
+    const themeToggle = document.getElementById('theme-toggle');
+    let savedTheme = null;
+    try {
+        savedTheme = localStorage.getItem('weather-dashboard-theme');
+    } catch (error) {
+        console.warn('Theme preference could not be loaded.', error);
+    }
+    if (savedTheme === 'dark' || savedTheme === 'light') setTheme(savedTheme);
+    else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+        try { localStorage.removeItem('weather-dashboard-theme'); } catch (error) { /* Storage is optional. */ }
+    }
+    themeToggle?.addEventListener('click', () => {
+        const currentTheme = document.documentElement.dataset.theme;
+        setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
     fetchWeather("Tokyo");
 
     document.getElementById("search-form").addEventListener("submit", e => {

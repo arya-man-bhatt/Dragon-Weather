@@ -740,7 +740,7 @@
         <header class="bg-gradient-to-r from-[var(--carbon-black)] to-[#1A1D24] text-[var(--mech-white)] clip-path-panel p-6 md:p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden rounded-xl border border-gray-800 shadow-2xl">
             <div class="scanline"></div>
             
-            <div class="flex items-center gap-5 z-10 interactive-node p-2 rounded-lg">
+            <div class="dashboard-brand flex items-center gap-5 z-10 interactive-node p-2 rounded-lg">
                 <!-- Animated Header Logo -->
                 <div class="header-logo relative w-14 h-14 bg-[var(--mech-white)] flex items-center justify-center text-[var(--carbon-black)] border-2 border-[var(--neon-red)]">
                     <i data-lucide="cpu" class="header-logo-icon w-7 h-7"></i>
@@ -1308,25 +1308,104 @@
                     </div>
                 </div>
 
-                <!-- System Status Panel -->
-                <div class="hud-panel bg-[var(--carbon-black)] text-white p-6 md:p-8 flex items-center justify-between border-none">
-                    <div class="flex items-center gap-4">
-                        <div class="p-3 bg-[var(--neon-red)] rounded-none" style="clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);">
-                            <i data-lucide="server" class="w-6 h-6 text-white idle-float"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-tech font-bold uppercase tracking-widest text-sm">Open-Meteo Satellite Uplink</h3>
-                            <p id="system-status" class="text-xs text-gray-400 mt-1" role="status" aria-live="polite">Extended telemetry currently nominal.</p>
-                        </div>
+                <div class="dragon-report-launch hud-panel" aria-labelledby="dragon-report-launch-title">
+                    <div class="dragon-report-launch-art" aria-hidden="true">
+                        <span class="dragon-report-spark dragon-report-spark-a"></span>
+                        <span class="dragon-report-spark dragon-report-spark-b"></span>
+                        <svg class="dragon-vector-icon" viewBox="0 0 160 120" aria-hidden="true">
+                            <path class="dragon-vector-tail" d="M58 79c-14 2-24-12-35-10-10 2-12 14-3 19 8 4 16-2 17-10"></path>
+                            <path class="dragon-vector-wing" d="M72 65C51 54 45 36 49 15c12 11 24 13 37 2 5 18 17 29 37 34-16 4-28 14-36 31z"></path>
+                            <path class="dragon-vector-wing-detail" d="M56 37c10 9 20 14 32 15L86 20M88 52c12 0 23 2 35 0-15 8-26 17-36 30"></path>
+                            <path class="dragon-vector-body" d="M43 77c14-13 28-19 43-18 12-14 27-20 45-17l12 8 13 2-9 8-13 1c-5 12-18 20-35 22l-22-1c-12 8-24 9-37 3"></path>
+                            <path class="dragon-vector-neck" d="M91 58c10-10 22-15 37-16l-5 14c-7 13-20 21-38 24l-13-6z"></path>
+                            <path class="dragon-vector-horn" d="M125 44l5-17 7 13 10-10-2 17M137 47l8-13 2 14"></path>
+                            <path class="dragon-vector-leg" d="M77 81l10 2-2 14-7 5-6-3 4-6M103 79l11-4 5 12-4 7-7-2 2-6"></path>
+                            <path class="dragon-vector-scale" d="M103 62l4 3 4-4 4 3 4-4"></path>
+                            <circle class="dragon-vector-eye" cx="137" cy="48" r="2.5"></circle>
+                            <circle class="dragon-vector-nostril" cx="153" cy="54" r="1.5"></circle>
+                        </svg>
                     </div>
-                    <button id="diagnostics-button" type="button" class="interactive-node px-6 py-2 border border-gray-600 text-gray-300 font-bold text-xs uppercase tracking-widest hover:border-[var(--neon-red)]" aria-describedby="system-status">
-                        Run Diagnostics
+                    <div class="dragon-report-launch-copy">
+                        <p class="dragon-report-eyebrow">FIELD INTELLIGENCE // WEATHER BRIEFING</p>
+                        <h3 id="dragon-report-launch-title">Dragon Report</h3>
+                        <p>A clear, detailed guide to the weather, what it means, and what to expect next.</p>
+                        <p id="system-status" class="sr-only" role="status" aria-live="polite">Waiting for weather telemetry.</p>
+                    </div>
+                    <button id="open-dragon-report" type="button" class="dragon-report-button" disabled>
+                        <i data-lucide="scroll-text" aria-hidden="true"></i>
+                        <span>Read report</span>
+                        <i data-lucide="arrow-up-right" class="dragon-report-button-arrow" aria-hidden="true"></i>
                     </button>
                 </div>
 
             </section>
         </main>
     </div>
+
+    <section id="dragon-report-loading" class="dragon-report-loading" role="status" aria-live="polite" aria-label="Creating your report" aria-hidden="true" hidden>
+        <div class="dragon-report-loading-scene" aria-hidden="true">
+            <span class="report-flight-star report-flight-star-a"></span>
+            <span class="report-flight-star report-flight-star-b"></span>
+            <span class="report-flight-star report-flight-star-c"></span>
+            <span class="report-ember report-ember-a"></span>
+            <span class="report-ember report-ember-b"></span>
+            <span class="report-ember report-ember-c"></span>
+            <svg class="report-flying-dragon" viewBox="0 0 160 120">
+                <path class="dragon-vector-tail" d="M58 79c-14 2-24-12-35-10-10 2-12 14-3 19 8 4 16-2 17-10"></path>
+                <path class="dragon-vector-wing" d="M72 65C51 54 45 36 49 15c12 11 24 13 37 2 5 18 17 29 37 34-16 4-28 14-36 31z"></path>
+                <path class="dragon-vector-wing-detail" d="M56 37c10 9 20 14 32 15L86 20M88 52c12 0 23 2 35 0-15 8-26 17-36 30"></path>
+                <path class="dragon-vector-body" d="M43 77c14-13 28-19 43-18 12-14 27-20 45-17l12 8 13 2-9 8-13 1c-5 12-18 20-35 22l-22-1c-12 8-24 9-37 3"></path>
+                <path class="dragon-vector-neck" d="M91 58c10-10 22-15 37-16l-5 14c-7 13-20 21-38 24l-13-6z"></path>
+                <path class="dragon-vector-horn" d="M125 44l5-17 7 13 10-10-2 17M137 47l8-13 2 14"></path>
+                <path class="dragon-vector-leg" d="M77 81l10 2-2 14-7 5-6-3 4-6M103 79l11-4 5 12-4 7-7-2 2-6"></path>
+                <path class="dragon-vector-scale" d="M103 62l4 3 4-4 4 3 4-4"></path>
+                <circle class="dragon-vector-eye" cx="137" cy="48" r="2.5"></circle>
+                <circle class="dragon-vector-nostril" cx="153" cy="54" r="1.5"></circle>
+            </svg>
+            <span class="report-flight-trail"></span>
+        </div>
+        <p class="dragon-report-loading-kicker">ATMOSPHERE INTEL // REPORT ENGINE</p>
+        <h2>Creating your report<span class="report-loading-dots" aria-hidden="true"><i>.</i><i>.</i><i>.</i></span></h2>
+        <p class="dragon-report-loading-caption">Your dragon is gathering the latest weather readings.</p>
+        <div class="dragon-report-loading-progress" aria-hidden="true"><span></span></div>
+        <p class="dragon-report-loading-code" aria-hidden="true">ASSEMBLING FIELD DOSSIER <span>PLEASE STAND BY</span></p>
+    </section>
+
+    <section id="dragon-report-modal" class="dragon-report-modal" role="dialog" aria-modal="true" aria-labelledby="dragon-report-title" aria-hidden="true" hidden>
+        <div class="dragon-report-dialog">
+            <header class="dragon-report-toolbar">
+                <div class="dragon-report-toolbar-brand">
+                    <span class="dragon-report-toolbar-mark" aria-hidden="true">
+                        <svg class="dragon-vector-icon" viewBox="0 0 160 120" aria-hidden="true">
+                            <path class="dragon-vector-tail" d="M58 79c-14 2-24-12-35-10-10 2-12 14-3 19 8 4 16-2 17-10"></path>
+                            <path class="dragon-vector-wing" d="M72 65C51 54 45 36 49 15c12 11 24 13 37 2 5 18 17 29 37 34-16 4-28 14-36 31z"></path>
+                            <path class="dragon-vector-wing-detail" d="M56 37c10 9 20 14 32 15L86 20M88 52c12 0 23 2 35 0-15 8-26 17-36 30"></path>
+                            <path class="dragon-vector-body" d="M43 77c14-13 28-19 43-18 12-14 27-20 45-17l12 8 13 2-9 8-13 1c-5 12-18 20-35 22l-22-1c-12 8-24 9-37 3"></path>
+                            <path class="dragon-vector-neck" d="M91 58c10-10 22-15 37-16l-5 14c-7 13-20 21-38 24l-13-6z"></path>
+                            <path class="dragon-vector-horn" d="M125 44l5-17 7 13 10-10-2 17M137 47l8-13 2 14"></path>
+                            <path class="dragon-vector-leg" d="M77 81l10 2-2 14-7 5-6-3 4-6M103 79l11-4 5 12-4 7-7-2 2-6"></path>
+                            <path class="dragon-vector-scale" d="M103 62l4 3 4-4 4 3 4-4"></path>
+                            <circle class="dragon-vector-eye" cx="137" cy="48" r="2.5"></circle>
+                            <circle class="dragon-vector-nostril" cx="153" cy="54" r="1.5"></circle>
+                        </svg>
+                    </span>
+                    <div>
+                        <p class="dragon-report-eyebrow">ATMOSPHERE INTEL // FIELD DOSSIER</p>
+                        <span>DRAGON WEATHER ARCHIVE</span>
+                    </div>
+                </div>
+                <div class="dragon-report-toolbar-actions">
+                    <button id="download-dragon-report" type="button" class="dragon-report-export" title="Opens the print dialog; choose Save as PDF.">
+                        <i data-lucide="download" aria-hidden="true"></i><span>Export PDF</span>
+                    </button>
+                    <button id="close-dragon-report" type="button" class="dragon-report-close" aria-label="Close dragon report">
+                        <i data-lucide="x" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </header>
+            <article id="dragon-report-content" class="dragon-report-content"></article>
+        </div>
+    </section>
 
     <!-- Application Logic -->
     <script type="application/disabled">

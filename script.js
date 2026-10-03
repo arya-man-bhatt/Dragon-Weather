@@ -8,6 +8,8 @@ let suggestionController = null;
 let suggestionLocations = [];
 let activeSuggestionIndex = -1;
 let currentWeatherLocation = null;
+let dragonReportSnapshot = null;
+let dragonReportLoadingTimer = null;
 let mapInstance = null;
 let mapMarker = null;
 let mapSelectedLocation = null;
@@ -388,6 +390,269 @@ function weatherDescription(code) {
     return "Anomalous Conditions";
 }
 
+function reportCondition(code) {
+    const descriptions = {
+        0: "Clear sky",
+        1: "Mainly clear",
+        2: "Partly cloudy",
+        3: "Overcast",
+        45: "Fog",
+        48: "Depositing rime fog",
+        51: "Light drizzle",
+        53: "Moderate drizzle",
+        55: "Dense drizzle",
+        56: "Light freezing drizzle",
+        57: "Dense freezing drizzle",
+        61: "Light rain",
+        63: "Moderate rain",
+        65: "Heavy rain",
+        66: "Light freezing rain",
+        67: "Heavy freezing rain",
+        71: "Light snow",
+        73: "Moderate snow",
+        75: "Heavy snow",
+        77: "Snow grains",
+        80: "Light rain showers",
+        81: "Moderate rain showers",
+        82: "Violent rain showers",
+        85: "Light snow showers",
+        86: "Heavy snow showers",
+        95: "Thunderstorm",
+        96: "Thunderstorm with light hail",
+        99: "Thunderstorm with heavy hail"
+    };
+    return descriptions[code] || "Conditions unavailable";
+}
+
+function reportNumber(value, digits = 0, suffix = "") {
+    return Number.isFinite(value) ? `${value.toFixed(digits)}${suffix}` : "Not available";
+}
+
+function reportCardinalDirection(degrees) {
+    if (!Number.isFinite(degrees)) return "Not available";
+    return ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(degrees / 45) % 8];
+}
+
+function reportEscape(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[character]);
+}
+
+function reportInsight(snapshot) {
+    const { current, daily } = snapshot.weather;
+    const high = daily.temperature_2m_max[0];
+    const low = daily.temperature_2m_min[0];
+    const wind = current.wind_speed_10m;
+    const rainChance = daily.precipitation_probability_max?.[0];
+    const uv = daily.uv_index_max?.[0];
+    const notes = [];
+
+    if (Number.isFinite(rainChance) && rainChance >= 50) {
+        notes.push("Rain is a meaningful possibility today; keep a light rain layer handy.");
+    } else if ((current.precipitation || 0) > 0) {
+        notes.push("Precipitation is being recorded now; allow extra time for outdoor plans.");
+    }
+    if (Number.isFinite(uv) && uv >= 6) {
+        notes.push("The forecast UV index is high; shade and sun protection are sensible outdoors.");
+    }
+    if (Number.isFinite(wind) && wind >= 30) {
+        notes.push("Breezy conditions may affect exposed or lightweight items.");
+    }
+    if (Number.isFinite(high) && high >= 30) {
+        notes.push("The forecast high is hot; plan water breaks and shaded pauses.");
+    } else if (Number.isFinite(low) && low <= 0) {
+        notes.push("Freezing temperatures are possible today; dress in warm layers.");
+    }
+    if (!notes.length) {
+        notes.push("No strong rain, heat, or wind signal stands out in the available readings. Check the hourly outlook before heading out.");
+    }
+    return notes;
+}
+
+function buildDragonReport(snapshot) {
+    const { location, weather } = snapshot;
+    const { current, hourly, daily } = weather;
+    const currentCondition = reportCondition(current.weather_code);
+    const high = daily.temperature_2m_max[0];
+    const low = daily.temperature_2m_min[0];
+    const currentTemperature = reportNumber(current.temperature_2m, 1, "°C");
+    const feelsLike = reportNumber(current.apparent_temperature, 1, "°C");
+    const dayHigh = reportNumber(high, 1, "°C");
+    const dayLow = reportNumber(low, 1, "°C");
+    const currentIndex = Math.max(0, hourly.time.findIndex(time => time >= current.time));
+    const hourlyRows = hourly.time.slice(currentIndex, currentIndex + 6).map((time, index) => {
+        const hour = currentIndex + index;
+        return `<tr>
+            <th scope="row">${reportEscape(time.split("T")[1]?.slice(0, 5) || "—")}</th>
+            <td>${reportNumber(hourly.temperature_2m[hour], 1, "°C")}</td>
+            <td>${reportEscape(reportCondition(hourly.weather_code?.[hour]))}</td>
+            <td>${reportNumber(hourly.precipitation_probability?.[hour], 0, "%")}</td>
+            <td>${reportNumber(hourly.wind_speed_10m?.[hour], 0, " km/h")}</td>
+        </tr>`;
+    }).join("");
+    const generatedAt = new Intl.DateTimeFormat(undefined, {
+        dateStyle: "medium", timeStyle: "short",
+        ...(location.timezone ? { timeZone: location.timezone } : {})
+    }).format(snapshot.generatedAt);
+    const localDate = current.time?.replace("T", " ") || "Local time unavailable";
+    const sunrise = daily.sunrise?.[0]?.split("T")[1] || "Not available";
+    const sunset = daily.sunset?.[0]?.split("T")[1] || "Not available";
+    const humidity = current.relative_humidity_2m;
+    let humidityMeaning = "Humidity measures moisture in the air; individual comfort varies.";
+    if (Number.isFinite(humidity) && humidity < 30) humidityMeaning = "The air is relatively dry, which can feel drying for skin and eyes.";
+    else if (Number.isFinite(humidity) && humidity <= 60) humidityMeaning = "This is a moderate humidity range for many people.";
+    else if (Number.isFinite(humidity)) humidityMeaning = "The air is humid; it can feel warmer and slow sweat evaporation.";
+
+    let windMeaning = "Wind is a measure of air movement near the surface.";
+    if (Number.isFinite(current.wind_speed_10m)) {
+        if (current.wind_speed_10m < 12) windMeaning = "Light winds; outdoor movement should generally feel calm.";
+        else if (current.wind_speed_10m < 30) windMeaning = "Noticeable breeze; loose items may move around.";
+        else if (current.wind_speed_10m < 50) windMeaning = "Strong breeze; consider this for cycling and exposed outdoor plans.";
+        else windMeaning = "Very strong winds; take care in exposed areas and secure loose items.";
+    }
+    const pressureMeaning = Number.isFinite(current.pressure_msl)
+        ? `Sea-level pressure is ${reportNumber(current.pressure_msl, 0, " hPa")}. A single reading is context, not a stand-alone forecast; changes over time are more informative.`
+        : "Pressure reading is not available.";
+    const visibilityMeaning = Number.isFinite(current.visibility)
+        ? current.visibility < 1000 ? "Visibility is reduced; take extra care on roads and paths."
+            : current.visibility < 5000 ? "Visibility is somewhat limited; be alert while travelling."
+                : "Visibility is currently good based on this reading."
+        : "Visibility reading is not available.";
+    const rainAmount = Number.isFinite(current.precipitation) ? `${current.precipitation.toFixed(1)} mm now` : "Not available";
+    const rainChance = reportNumber(daily.precipitation_probability_max?.[0], 0, "%");
+    const rainTotal = reportNumber(daily.precipitation_sum?.[0], 1, " mm");
+    const uvIndex = reportNumber(current.uv_index, 1);
+    const uvMax = reportNumber(daily.uv_index_max?.[0], 1);
+    const uvMeaning = Number.isFinite(current.uv_index)
+        ? current.uv_index >= 6 ? "High at this reading; shade and sun protection are sensible outdoors."
+            : current.uv_index >= 3 ? "Moderate at this reading; consider sun protection during extended time outdoors."
+                : "Low at this reading."
+        : "UV reading is not available.";
+    const notes = reportInsight(snapshot);
+    const locationName = `${location.name}${location.admin1 ? `, ${location.admin1}` : ""}${location.country ? `, ${location.country}` : ""}`;
+    const vectorDragon = `<svg class="dragon-vector-icon" viewBox="0 0 160 120" aria-hidden="true">
+        <path class="dragon-vector-tail" d="M58 79c-14 2-24-12-35-10-10 2-12 14-3 19 8 4 16-2 17-10"></path>
+        <path class="dragon-vector-wing" d="M72 65C51 54 45 36 49 15c12 11 24 13 37 2 5 18 17 29 37 34-16 4-28 14-36 31z"></path>
+        <path class="dragon-vector-wing-detail" d="M56 37c10 9 20 14 32 15L86 20M88 52c12 0 23 2 35 0-15 8-26 17-36 30"></path>
+        <path class="dragon-vector-body" d="M43 77c14-13 28-19 43-18 12-14 27-20 45-17l12 8 13 2-9 8-13 1c-5 12-18 20-35 22l-22-1c-12 8-24 9-37 3"></path>
+        <path class="dragon-vector-neck" d="M91 58c10-10 22-15 37-16l-5 14c-7 13-20 21-38 24l-13-6z"></path>
+        <path class="dragon-vector-horn" d="M125 44l5-17 7 13 10-10-2 17M137 47l8-13 2 14"></path>
+        <path class="dragon-vector-leg" d="M77 81l10 2-2 14-7 5-6-3 4-6M103 79l11-4 5 12-4 7-7-2 2-6"></path>
+        <path class="dragon-vector-scale" d="M103 62l4 3 4-4 4 3 4-4"></path>
+        <circle class="dragon-vector-eye" cx="137" cy="48" r="2.5"></circle>
+        <circle class="dragon-vector-nostril" cx="153" cy="54" r="1.5"></circle>
+    </svg>`;
+
+    return `
+        <div class="dragon-report-hero">
+            <div class="dragon-report-hero-copy">
+                <p class="dragon-report-kicker">FIELD REPORT // ${reportEscape(location.country_code || "LOCAL")}</p>
+                <h1 id="dragon-report-title">${reportEscape(location.name)} <span>Weather Report</span></h1>
+                <p class="dragon-report-location">${reportEscape(locationName)}</p>
+                <p class="dragon-report-summary">The sky is reporting <strong>${reportEscape(currentCondition.toLowerCase())}</strong> at <strong>${currentTemperature}</strong>. It feels like <strong>${feelsLike}</strong>. Today is forecast to range from <strong>${dayLow}</strong> to <strong>${dayHigh}</strong>.</p>
+                <p class="dragon-report-timestamp">OBSERVED ${reportEscape(localDate)} LOCAL · GENERATED ${reportEscape(generatedAt)}</p>
+            </div>
+            <div class="dragon-report-crest" aria-hidden="true"><span>DR</span>${vectorDragon}<small>WINDWARD<br>ARCHIVE</small></div>
+        </div>
+        <section class="dragon-report-section" aria-labelledby="dragon-current-heading">
+            <div class="dragon-report-section-heading"><span>01</span><div><p>LIVE TELEMETRY</p><h2 id="dragon-current-heading">At a glance</h2></div></div>
+            <div class="dragon-report-metrics">
+                <div class="dragon-report-metric dragon-report-metric-feature"><span>NOW</span><strong>${currentTemperature}</strong><small>${reportEscape(currentCondition)}</small></div>
+                <div class="dragon-report-metric"><span>FEELS LIKE</span><strong>${feelsLike}</strong><small>Perceived temperature</small></div>
+                <div class="dragon-report-metric"><span>TODAY'S RANGE</span><strong>${dayLow} <i>—</i> ${dayHigh}</strong><small>Forecast low to high</small></div>
+                <div class="dragon-report-metric"><span>HUMIDITY</span><strong>${reportNumber(humidity, 0, "%")}</strong><small>${reportEscape(humidityMeaning)}</small></div>
+                <div class="dragon-report-metric"><span>WIND</span><strong>${reportNumber(current.wind_speed_10m, 1, " km/h")}</strong><small>${reportEscape(reportCardinalDirection(current.wind_direction_10m))} · gusts ${reportNumber(current.wind_gusts_10m, 1, " km/h")} · forecast peak ${reportNumber(daily.wind_speed_10m_max?.[0], 1, " km/h")}</small></div>
+                <div class="dragon-report-metric"><span>PRECIPITATION</span><strong>${reportEscape(rainChance)}</strong><small>${reportEscape(rainAmount)} · ${reportEscape(rainTotal)} forecast today</small></div>
+            </div>
+        </section>
+        <section class="dragon-report-section" aria-labelledby="dragon-reading-heading">
+            <div class="dragon-report-section-heading"><span>02</span><div><p>THE READ OF THE SKY</p><h2 id="dragon-reading-heading">What these numbers mean</h2></div></div>
+            <div class="dragon-report-reading-grid">
+                <article><h3>Wind &amp; gusts</h3><p>${reportEscape(windMeaning)} Gusts are brief stronger bursts, so they can feel sharper than the sustained wind.</p></article>
+                <article><h3>Moisture &amp; rain</h3><p>${reportEscape(humidityMeaning)} The rain chance is the forecast likelihood of measurable precipitation at a point during today; it is not the percentage of the day that will be rainy.</p></article>
+                <article><h3>Pressure &amp; visibility</h3><p>${reportEscape(pressureMeaning)} ${reportEscape(visibilityMeaning)}</p></article>
+                <article><h3>Clouds, dew point &amp; UV</h3><p>Cloud cover: ${reportNumber(current.cloud_cover, 0, "%")}. Dew point: ${reportNumber(current.dew_point_2m, 1, "°C")}. UV index: ${uvIndex} now, ${uvMax} forecast maximum. ${reportEscape(uvMeaning)}</p></article>
+            </div>
+        </section>
+        <section class="dragon-report-section" aria-labelledby="dragon-outlook-heading">
+            <div class="dragon-report-section-heading"><span>03</span><div><p>THE NEXT LEG</p><h2 id="dragon-outlook-heading">Hourly outlook</h2></div></div>
+            <div class="dragon-report-table-wrap"><table class="dragon-report-table">
+                <thead><tr><th scope="col">LOCAL TIME</th><th scope="col">TEMP</th><th scope="col">CONDITIONS</th><th scope="col">RAIN CHANCE</th><th scope="col">WIND</th></tr></thead>
+                <tbody>${hourlyRows || '<tr><td colspan="5">Hourly outlook is not available.</td></tr>'}</tbody>
+            </table></div>
+            <div class="dragon-report-sunrise"><span>☼</span> Sunrise <strong>${reportEscape(sunrise)}</strong><span class="dragon-report-sunset-mark">◒</span> Sunset <strong>${reportEscape(sunset)}</strong><span class="dragon-report-local-label">${reportEscape(location.timezone_abbreviation || location.timezone || "LOCAL TIME")}</span></div>
+        </section>
+        <section class="dragon-report-section dragon-report-field-notes" aria-labelledby="dragon-notes-heading">
+            <div class="dragon-report-section-heading"><span>04</span><div><p>THE DRAGON'S FIELD NOTES</p><h2 id="dragon-notes-heading">Plan for the day</h2></div></div>
+            <ul>${notes.map(note => `<li>${reportEscape(note)}</li>`).join("")}</ul>
+        </section>
+        <footer class="dragon-report-footer">
+            <span>DRAGON WEATHER // FIELD DOSSIER</span>
+            <p>Weather can change. This report summarizes the latest available Open-Meteo readings and forecast for this location; it is general information, not an official warning.</p>
+        </footer>`;
+}
+
+function renderDragonReport() {
+    if (!dragonReportSnapshot) return;
+    const modal = document.getElementById("dragon-report-modal");
+    const content = document.getElementById("dragon-report-content");
+    content.innerHTML = buildDragonReport(dragonReportSnapshot);
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dragon-report-open");
+    lucide.createIcons();
+    document.getElementById("close-dragon-report").focus();
+}
+
+function hideDragonReportLoading() {
+    const loading = document.getElementById("dragon-report-loading");
+    if (!loading || loading.hidden) return;
+    window.clearTimeout(dragonReportLoadingTimer);
+    dragonReportLoadingTimer = null;
+    loading.hidden = true;
+    loading.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("dragon-report-loading-open");
+    document.getElementById("open-dragon-report").disabled = !dragonReportSnapshot;
+    document.getElementById("download-dragon-report").disabled = false;
+}
+
+function showDragonReportLoading(onComplete) {
+    if (!dragonReportSnapshot) return;
+    window.clearTimeout(dragonReportLoadingTimer);
+    const loading = document.getElementById("dragon-report-loading");
+    loading.hidden = false;
+    loading.setAttribute("aria-hidden", "false");
+    document.body.classList.add("dragon-report-loading-open");
+    document.getElementById("open-dragon-report").disabled = true;
+    document.getElementById("download-dragon-report").disabled = true;
+    void loading.offsetWidth;
+    loading.classList.remove("dragon-report-loading-active");
+    void loading.offsetWidth;
+    loading.classList.add("dragon-report-loading-active");
+    dragonReportLoadingTimer = window.setTimeout(() => {
+        hideDragonReportLoading();
+        onComplete();
+    }, 2000);
+}
+
+function openDragonReport() {
+    if (!dragonReportSnapshot) return;
+    renderDragonReport();
+    showDragonReportLoading(() => {
+        document.getElementById("close-dragon-report").focus();
+    });
+}
+
+function closeDragonReport() {
+    const modal = document.getElementById("dragon-report-modal");
+    if (modal.hidden) return;
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("dragon-report-open");
+    document.getElementById("open-dragon-report").focus();
+}
+
 function updateDragonHologram(code) {
     const hologramLayer = document.getElementById("weather-hologram");
     const sun = `<g class="idle-spin"><circle cx="0" cy="0" r="12" fill="none" stroke="#FF2A42" stroke-width="3" stroke-dasharray="6 3"/><circle cx="0" cy="0" r="5" fill="#FF2A42"/></g>`;
@@ -412,33 +677,6 @@ function addShockwave(e) {
     setTimeout(() => el.classList.remove('click-shockwave'), 400);
 }
 
-async function runDiagnostics() {
-    const button = document.getElementById("diagnostics-button");
-    const status = document.getElementById("system-status");
-    const requiredElements = ["city-name", "temperature", "wind-speed", "humidity", "pressure", "visibility", "forecastChart"];
-    const missingElements = requiredElements.filter(id => !document.getElementById(id));
-
-    if (!button || !status) return;
-    button.disabled = true;
-    button.innerText = "Checking...";
-    status.innerText = "Running system diagnostics...";
-
-    try {
-        if (missingElements.length) throw new Error(`Missing module: ${missingElements.join(", ")}`);
-        if (!chartInstance) throw new Error("Thermal chart is not initialized");
-
-        const response = await fetch("https://api.open-meteo.com/v1/forecast?latitude=35&longitude=139&current=temperature_2m&forecast_days=1", { method: "GET", cache: "no-store" });
-        if (!response.ok) throw new Error("Open-Meteo uplink unavailable");
-        status.innerText = "Diagnostics complete // all systems nominal";
-    } catch (error) {
-        status.innerText = `Diagnostics warning // ${error.message}`;
-        console.error(error);
-    } finally {
-        button.disabled = false;
-        button.innerText = "Run Diagnostics";
-    }
-}
-
 async function fetchWeather(city, showLoading = false, selectedLocation = null) {
     const requestId = ++requestSequence;
     const status = document.getElementById("system-status");
@@ -456,7 +694,7 @@ async function fetchWeather(city, showLoading = false, selectedLocation = null) 
         }
         if (!location) throw new Error(`Location not found: ${city}`);
 
-        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,pressure_msl,wind_speed_10m,weather_code,visibility&hourly=temperature_2m&timezone=auto&forecast_days=1`);
+        const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,dew_point_2m,pressure_msl,wind_speed_10m,wind_direction_10m,wind_gusts_10m,weather_code,cloud_cover,visibility,precipitation,rain,uv_index,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max,precipitation_sum,wind_speed_10m_max&timezone=auto&forecast_days=1`);
         if (!weatherResponse.ok) throw new Error("Telemetry link severed.");
         const weatherData = await weatherResponse.json();
         const current = weatherData.current;
@@ -464,6 +702,8 @@ async function fetchWeather(city, showLoading = false, selectedLocation = null) 
         location.timezone = location.timezone || weatherData.timezone;
         location.timezone_abbreviation = location.timezone_abbreviation || weatherData.timezone_abbreviation;
         currentWeatherLocation = location;
+        dragonReportSnapshot = { location: { ...location }, weather: weatherData, generatedAt: new Date() };
+        document.getElementById("open-dragon-report").disabled = false;
 
         const hourlyTemps = weatherData.hourly.temperature_2m.slice(0, 24).map(Math.round);
         const hourlyLabels = weatherData.hourly.time.slice(0, 24).map(time => time.split("T")[1].slice(0, 5));
@@ -914,7 +1154,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     document.addEventListener("keydown", event => {
         const confirmation = document.getElementById("map-weather-confirmation");
-        if (event.key === "Escape" && !confirmation.hidden) {
+        const reportModal = document.getElementById("dragon-report-modal");
+        const reportLoading = document.getElementById("dragon-report-loading");
+        if (event.key === "Escape" && !reportLoading.hidden) {
+            event.preventDefault();
+        } else if (event.key === "Escape" && !reportModal.hidden) {
+            closeDragonReport();
+        } else if (event.key === "Escape" && !confirmation.hidden) {
             cancelMapWeatherConfirmation();
         } else if (event.key === "Escape" && mapOpen && document.getElementById("map-location-suggestions").hidden) {
             closeLocationMap();
@@ -930,7 +1176,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    document.getElementById("diagnostics-button").addEventListener("click", runDiagnostics);
+    document.getElementById("open-dragon-report").addEventListener("click", openDragonReport);
+    document.getElementById("close-dragon-report").addEventListener("click", closeDragonReport);
+    document.getElementById("download-dragon-report").addEventListener("click", () => {
+        if (!dragonReportSnapshot) return;
+        if (document.getElementById("dragon-report-modal").hidden) renderDragonReport();
+        showDragonReportLoading(() => {
+            const previousTitle = document.title;
+            document.title = `${dragonReportSnapshot.location.name} - Dragon Weather Report`;
+            window.addEventListener("afterprint", () => { document.title = previousTitle; }, { once: true });
+            window.print();
+        });
+    });
+    document.getElementById("dragon-report-modal").addEventListener("click", event => {
+        if (event.target === event.currentTarget) closeDragonReport();
+    });
 
     const node = document.getElementById("visibility-node");
     const pupilGroup = document.getElementById("eye-pupil-group");

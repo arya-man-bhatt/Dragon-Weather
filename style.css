@@ -886,6 +886,153 @@ header:has(.location-suggestions:not([hidden])) { z-index: 60; overflow: visible
 .trajectory-icon-ring { animation: trajectory-ring 3.2s linear infinite; transform-origin: center; }
 .scanline { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent, rgba(255,42,66,0.1), transparent); animation: scan 3s linear infinite; pointer-events: none; }
 
+.dragon-report-launch {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.25rem;
+    overflow: hidden;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    background:
+        radial-gradient(circle at 10% 110%, rgba(73, 153, 111, 0.22), transparent 42%),
+        linear-gradient(120deg, #111a19, #121820 62%, #201719);
+    color: #edf4ed;
+}
+.dragon-report-launch::after {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 5px 5px;
+    content: "";
+    opacity: 0.24;
+    pointer-events: none;
+}
+.dragon-report-launch-art {
+    position: relative;
+    display: grid;
+    width: 4.25rem;
+    height: 4.25rem;
+    place-items: center;
+    border: 1px solid rgba(137, 207, 157, 0.5);
+    background: linear-gradient(145deg, rgba(58, 120, 88, 0.4), rgba(16, 26, 24, 0.9));
+    color: #c5e9a3;
+    box-shadow: 0 0 28px rgba(83, 180, 119, 0.14), inset 0 0 18px rgba(140, 218, 148, 0.08);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.dragon-report-launch-art > svg { z-index: 1; width: 2rem; height: 2rem; fill: rgba(197, 233, 163, 0.12); filter: drop-shadow(0 0 8px rgba(166, 230, 144, 0.55)); }
+.dragon-report-launch-copy, .dragon-report-button { position: relative; z-index: 1; }
+.dragon-report-eyebrow { margin: 0 0 0.4rem; color: #a9d58f; font: 700 0.64rem/1.4 'Rajdhani', sans-serif; letter-spacing: 0.18em; }
+.dragon-report-launch-copy h3 { margin: 0; color: #f3f7ed; font: 800 clamp(1.15rem, 3vw, 1.55rem)/1.2 'Orbitron', sans-serif; letter-spacing: 0.04em; text-transform: uppercase; }
+.dragon-report-launch-copy > p:last-child { max-width: 38rem; margin: 0.4rem 0 0; color: #bbc8c0; font-size: 0.96rem; line-height: 1.45; }
+.dragon-report-button, .dragon-report-export {
+    display: inline-flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1rem;
+    border: 1px solid rgba(174, 222, 154, 0.7);
+    background: #b9e394;
+    color: #17211a;
+    cursor: pointer;
+    font: 800 0.76rem/1 'Rajdhani', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+.dragon-report-button:hover:not(:disabled), .dragon-report-export:hover { transform: translateY(-2px); background: #d3f5ad; box-shadow: 0 7px 24px rgba(164, 224, 141, 0.2); }
+.dragon-report-button:focus-visible, .dragon-report-export:focus-visible, .dragon-report-close:focus-visible { outline: 3px solid #f8ca70; outline-offset: 3px; }
+.dragon-report-button:disabled { cursor: not-allowed; opacity: 0.5; }
+.dragon-report-button > svg:first-child, .dragon-report-export > svg { width: 1rem; height: 1rem; }
+.dragon-report-button-arrow { width: 0.9rem; height: 0.9rem; }
+.dragon-report-modal[hidden] { display: none; }
+.dragon-report-modal {
+    position: fixed;
+    z-index: 1300;
+    inset: 0;
+    display: grid;
+    place-items: start center;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: clamp(0.5rem, 2.5vw, 1.75rem);
+    background: rgba(3, 7, 8, 0.88);
+    backdrop-filter: blur(12px);
+}
+.dragon-report-dialog {
+    width: min(66rem, 100%);
+    margin: auto 0;
+    overflow: hidden;
+    border: 1px solid rgba(169, 213, 143, 0.38);
+    background: #111815;
+    color: #edf1e9;
+    box-shadow: 0 25px 100px rgba(0, 0, 0, 0.7), 0 0 45px rgba(96, 175, 115, 0.1);
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+.dragon-report-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem clamp(0.85rem, 3vw, 1.5rem); border-bottom: 1px solid rgba(177, 202, 177, 0.15); background: #0c1110; }
+.dragon-report-toolbar-brand, .dragon-report-toolbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+.dragon-report-toolbar-brand > div > span { color: #e5eadf; font: 700 0.68rem 'Orbitron', sans-serif; letter-spacing: 0.1em; }
+.dragon-report-toolbar-brand .dragon-report-eyebrow { margin-bottom: 0.2rem; font-size: 0.55rem; }
+.dragon-report-toolbar-mark { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border: 1px solid rgba(169, 213, 143, 0.48); color: #c5e9a3; background: rgba(106, 163, 110, 0.12); }
+.dragon-report-toolbar-mark svg { width: 1.2rem; height: 1.2rem; }
+.dragon-report-export { min-height: 2.45rem; padding: 0.55rem 0.8rem; font-size: 0.68rem; }
+.dragon-report-close { display: grid; width: 2.45rem; height: 2.45rem; place-items: center; border: 1px solid rgba(177, 202, 177, 0.22); background: transparent; color: #dce6d9; cursor: pointer; }
+.dragon-report-close:hover { border-color: #f08b71; color: #ffad8d; }
+.dragon-report-close svg { width: 1.1rem; height: 1.1rem; }
+.dragon-report-content { max-height: calc(100dvh - 6rem); overflow-y: auto; padding: clamp(1rem, 4vw, 2.4rem); scrollbar-color: #496449 #111815; scrollbar-width: thin; }
+.dragon-report-hero { position: relative; display: flex; min-height: 14rem; align-items: center; justify-content: space-between; gap: 1.5rem; overflow: hidden; padding: clamp(1.2rem, 4vw, 2.5rem); border: 1px solid rgba(165, 204, 142, 0.25); background: radial-gradient(ellipse at 90% 20%, rgba(81, 135, 80, 0.26), transparent 43%), linear-gradient(110deg, #19231c, #171c1a 68%, #29201b); }
+.dragon-report-hero::after { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.025) 4px), linear-gradient(90deg, transparent 58%, rgba(255,255,255,0.025) 58.2%, transparent 58.5%); content: ""; pointer-events: none; }
+.dragon-report-hero-copy { position: relative; z-index: 1; max-width: 46rem; }
+.dragon-report-kicker { margin: 0 0 0.8rem; color: #b4d994; font: 700 0.67rem 'Rajdhani', sans-serif; letter-spacing: 0.2em; }
+.dragon-report-hero h1 { margin: 0; color: #f0f2e9; font: 800 clamp(1.45rem, 5vw, 2.5rem)/1.15 'Orbitron', sans-serif; letter-spacing: -0.025em; }
+.dragon-report-hero h1 span { display: block; margin-top: 0.25rem; color: #d6a66c; font-size: 0.58em; letter-spacing: 0.12em; text-transform: uppercase; }
+.dragon-report-location { margin: 0.65rem 0 0; color: #bbc8bc; font-size: 1rem; font-weight: 700; letter-spacing: 0.06em; }
+.dragon-report-summary { max-width: 43rem; margin: 1.15rem 0 0; color: #e5e9de; font-size: 1.08rem; line-height: 1.65; }
+.dragon-report-summary strong { color: #c5e9a3; }
+.dragon-report-timestamp { margin: 1rem 0 0; color: #9aa89d; font: 700 0.62rem 'Rajdhani', sans-serif; letter-spacing: 0.11em; }
+.dragon-report-crest { position: relative; z-index: 1; display: grid; width: 8rem; height: 8rem; flex: 0 0 8rem; place-items: center; border: 1px solid rgba(191, 218, 158, 0.42); color: #c5e9a3; background: linear-gradient(145deg, rgba(125, 159, 91, 0.16), rgba(15, 21, 18, 0.5)); box-shadow: 0 0 0 8px rgba(191, 218, 158, 0.035), inset 0 0 24px rgba(151, 200, 124, 0.1); transform: rotate(45deg); }
+.dragon-report-crest > * { transform: rotate(-45deg); }
+.dragon-report-crest > span { position: absolute; top: 0.9rem; left: 1rem; color: rgba(208, 231, 179, 0.65); font: 800 0.6rem 'Orbitron', sans-serif; }
+.dragon-report-crest svg { width: 2.5rem; height: 2.5rem; filter: drop-shadow(0 0 9px rgba(199, 231, 148, 0.42)); }
+.dragon-report-crest small { position: absolute; right: 0.55rem; bottom: 0.65rem; color: #c6a675; font: 700 0.42rem/1.3 'Rajdhani', sans-serif; letter-spacing: 0.1em; text-align: right; }
+.dragon-report-section { margin-top: 1.6rem; }
+.dragon-report-section-heading { display: flex; align-items: center; gap: 0.8rem; margin: 0 0 0.85rem; padding-bottom: 0.7rem; border-bottom: 1px solid rgba(174, 196, 172, 0.17); }
+.dragon-report-section-heading > span { display: grid; width: 2rem; height: 2rem; flex: 0 0 2rem; place-items: center; border: 1px solid rgba(180, 214, 146, 0.45); color: #c7e3a7; font: 700 0.65rem 'Orbitron', sans-serif; }
+.dragon-report-section-heading p { margin: 0 0 0.13rem; color: #a9d58f; font: 700 0.56rem 'Rajdhani', sans-serif; letter-spacing: 0.18em; }
+.dragon-report-section-heading h2 { margin: 0; color: #eef2e8; font: 700 clamp(1rem, 3vw, 1.25rem) 'Orbitron', sans-serif; letter-spacing: 0.025em; }
+.dragon-report-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.65rem; }
+.dragon-report-metric { display: flex; min-height: 7rem; flex-direction: column; justify-content: center; gap: 0.35rem; padding: 0.9rem; border: 1px solid rgba(171, 193, 168, 0.14); background: linear-gradient(145deg, #18211c, #151a19); }
+.dragon-report-metric > span { color: #a8baaa; font: 700 0.58rem 'Rajdhani', sans-serif; letter-spacing: 0.15em; }
+.dragon-report-metric > strong { color: #eef0e6; font: 800 clamp(1.15rem, 3.7vw, 1.7rem)/1.15 'Orbitron', sans-serif; overflow-wrap: anywhere; }
+.dragon-report-metric > strong i { color: #c79e69; font-size: 0.7em; font-style: normal; }
+.dragon-report-metric > small { color: #aebbb0; font-size: 0.82rem; line-height: 1.4; }
+.dragon-report-metric-feature { border-color: rgba(179, 216, 140, 0.38); background: radial-gradient(ellipse at 100% 0, rgba(114, 156, 89, 0.2), transparent 62%), #19231c; }
+.dragon-report-metric-feature > strong { color: #c9e7a6; font-size: clamp(1.8rem, 5vw, 2.5rem); }
+.dragon-report-reading-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.65rem; }
+.dragon-report-reading-grid article { padding: 1rem; border-left: 2px solid #7b9c66; background: rgba(255, 255, 255, 0.035); }
+.dragon-report-reading-grid h3 { margin: 0 0 0.35rem; color: #e5d1ac; font: 700 0.78rem 'Orbitron', sans-serif; }
+.dragon-report-reading-grid p { margin: 0; color: #c0cbc0; font-size: 0.94rem; line-height: 1.6; }
+.dragon-report-table-wrap { overflow-x: auto; border: 1px solid rgba(171, 193, 168, 0.16); }
+.dragon-report-table { width: 100%; border-collapse: collapse; text-align: left; }
+.dragon-report-table th, .dragon-report-table td { padding: 0.68rem 0.8rem; border-bottom: 1px solid rgba(171, 193, 168, 0.1); color: #d4ddd2; font-size: 0.83rem; white-space: nowrap; }
+.dragon-report-table thead th { background: #202a23; color: #b4d994; font: 700 0.58rem 'Rajdhani', sans-serif; letter-spacing: 0.11em; }
+.dragon-report-table tbody th { color: #e8ebdf; font-weight: 700; }
+.dragon-report-table tbody tr:last-child th, .dragon-report-table tbody tr:last-child td { border-bottom: 0; }
+.dragon-report-sunrise { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.65rem; padding: 0.75rem 0.9rem; color: #bcc8b9; background: rgba(255, 255, 255, 0.035); font-size: 0.85rem; }
+.dragon-report-sunrise > span:first-child { color: #e5bd72; }
+.dragon-report-sunrise strong { margin-right: 0.7rem; color: #edf0e7; }
+.dragon-report-sunset-mark { color: #d6a66c; }
+.dragon-report-local-label { margin-left: auto; color: #9db295; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; }
+.dragon-report-field-notes { padding: 1rem; border: 1px solid rgba(204, 163, 105, 0.25); background: linear-gradient(110deg, rgba(116, 84, 49, 0.12), rgba(255,255,255,0.02)); }
+.dragon-report-field-notes .dragon-report-section-heading { margin-bottom: 0.55rem; }
+.dragon-report-field-notes ul { display: grid; gap: 0.45rem; margin: 0; padding: 0; list-style: none; }
+.dragon-report-field-notes li { position: relative; padding-left: 1.25rem; color: #e0e2d7; font-size: 0.95rem; line-height: 1.5; }
+.dragon-report-field-notes li::before { position: absolute; top: 0.22rem; left: 0; color: #e5bd72; content: "◆"; font-size: 0.6rem; }
+.dragon-report-footer { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0.75rem; margin-top: 1.3rem; padding-top: 0.85rem; border-top: 1px solid rgba(171, 193, 168, 0.17); }
+.dragon-report-footer > span { color: #c4d2b6; font: 700 0.55rem 'Orbitron', sans-serif; letter-spacing: 0.1em; }
+.dragon-report-footer > p { margin: 0; color: #9da99e; font-size: 0.75rem; line-height: 1.4; text-align: right; }
+body.dragon-report-open { overflow: hidden; }
+@keyframes report-spark { from { opacity: 0.45; transform: translateY(2px); } to { opacity: 1; transform: translateY(-2px); } }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes spin-slow { to { transform: rotate(360deg); } }
 @keyframes spin-fast { to { transform: rotate(-360deg); } }
@@ -939,6 +1086,15 @@ header:has(.location-suggestions:not([hidden])) { z-index: 60; overflow: visible
     .location-map-stage { height: clamp(12rem, 36vh, 22rem); min-height: 12rem; margin: 0 0.75rem; }
     .location-map-footer { grid-template-columns: minmax(0, 1fr) auto; padding: 0.65rem 0.75rem 0.8rem; }
     .map-attribution { grid-column: 1 / -1; text-align: left; }
+    .dragon-report-content { max-height: calc(100dvh - 4rem); padding: 0.85rem; }
+    .dragon-report-hero { min-height: 0; }
+    .dragon-report-crest { width: 5.5rem; height: 5.5rem; flex-basis: 5.5rem; }
+    .dragon-report-crest svg { width: 1.9rem; height: 1.9rem; }
+    .dragon-report-crest > span { top: 0.5rem; left: 0.55rem; }
+    .dragon-report-crest small { right: 0.3rem; bottom: 0.3rem; }
+    .dragon-report-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dragon-report-reading-grid { grid-template-columns: minmax(0, 1fr); }
+    .dragon-report-table th, .dragon-report-table td { padding: 0.55rem; }
 }
 
 @media (max-width: 420px) {
@@ -954,14 +1110,328 @@ header:has(.location-suggestions:not([hidden])) { z-index: 60; overflow: visible
     #core-card .my-8 { gap: 0.5rem; margin-top: 1.25rem; margin-bottom: 1.25rem; }
     #dragon-container { width: min(7rem, 32vw); height: min(7rem, 32vw); }
     .metric-node { min-height: 112px; padding: 0.75rem; }
-    .trajectory-section > .hud-panel:last-child { flex-direction: column; align-items: stretch; gap: 1rem; }
-    #diagnostics-button { width: 100%; min-height: 40px; }
+    .dragon-report-launch { grid-template-columns: auto minmax(0, 1fr); gap: 0.85rem; }
+    .dragon-report-launch-art { width: 3.25rem; height: 3.25rem; }
+    .dragon-report-launch-art > svg { width: 1.6rem; height: 1.6rem; }
+    .dragon-report-button { grid-column: 1 / -1; width: 100%; }
+    .dragon-report-content { max-height: calc(100dvh - 4rem); padding: 0.85rem; }
+    .dragon-report-crest { width: 5rem; height: 5rem; flex-basis: 5rem; }
+    .dragon-report-crest svg { width: 1.8rem; height: 1.8rem; }
+    .dragon-report-crest > span { top: 0.4rem; left: 0.45rem; font-size: 0.48rem; }
+    .dragon-report-crest small { right: 0.25rem; bottom: 0.25rem; font-size: 0.34rem; }
+    .dragon-report-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dragon-report-reading-grid { grid-template-columns: minmax(0, 1fr); }
+    .dragon-report-sunrise { flex-wrap: wrap; }
+    .dragon-report-local-label { width: 100%; margin-left: 0; }
     .map-search-form { gap: 0.45rem; }
     .map-action-button { width: 3rem; padding: 0.5rem; }
     .map-action-button span { display: none; }
     .location-map-stage { height: clamp(11rem, 34vh, 19rem); min-height: 11rem; }
     .location-map-footer { grid-template-columns: minmax(0, 1fr); }
     .map-use-location { width: 100%; }
+    .dragon-report-toolbar-brand > div > span { font-size: 0.55rem; }
+    .dragon-report-toolbar-brand .dragon-report-eyebrow { max-width: 10rem; font-size: 0.48rem; }
+    .dragon-report-export { width: 2.45rem; padding: 0.5rem; }
+    .dragon-report-export span { display: none; }
+    .dragon-report-hero { min-height: 0; gap: 0.5rem; padding: 1rem; }
+    .dragon-report-crest { width: 3.4rem; height: 3.4rem; flex-basis: 3.4rem; }
+    .dragon-report-crest svg { width: 1.4rem; height: 1.4rem; }
+    .dragon-report-crest > span, .dragon-report-crest small { display: none; }
+    .dragon-report-footer { grid-template-columns: 1fr; }
+    .dragon-report-footer > p { text-align: left; }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    header { flex-wrap: wrap; }
+    .dashboard-brand { flex: 1 1 100%; min-width: 0; }
+    #search-form { flex: 1 1 100%; width: 100%; max-width: none; }
+}
+
+.dragon-report-launch {
+    background:
+        radial-gradient(circle at 10% 110%, rgba(255, 42, 66, 0.22), transparent 42%),
+        linear-gradient(120deg, #111419, #12171d 62%, #211519);
+    color: #eef1f5;
+}
+.dragon-report-launch-art {
+    border-color: rgba(255, 78, 98, 0.62);
+    background: linear-gradient(145deg, rgba(131, 26, 42, 0.48), rgba(16, 20, 26, 0.94));
+    color: #ff5367;
+    box-shadow: 0 0 28px rgba(255, 42, 66, 0.2), inset 0 0 18px rgba(255, 42, 66, 0.12);
+}
+.dragon-report-launch-art { border-radius: 50%; clip-path: none; }
+.dragon-report-launch-art::before, .dragon-report-launch-art::after { position: absolute; inset: 5px; border: 1px solid rgba(255, 113, 128, 0.3); border-radius: 50%; content: ""; }
+.dragon-report-launch-art::after { inset: -4px; border-color: rgba(255, 42, 66, 0.18); }
+.dragon-report-launch-art > .dragon-vector-icon { z-index: 1; width: 3.15rem; height: 2.35rem; overflow: visible; fill: currentColor; filter: drop-shadow(0 0 7px rgba(255, 42, 66, 0.55)); }
+.dragon-report-spark { position: absolute; z-index: 2; width: 5px; height: 5px; border-radius: 50%; }
+.dragon-report-spark-a { top: 0.55rem; right: 0.65rem; }
+.dragon-report-spark-b { bottom: 0.65rem; left: 0.55rem; width: 4px; height: 4px; opacity: 0.75; }
+.dragon-vector-body { fill: currentColor; }
+.dragon-vector-tail, .dragon-vector-wing-detail, .dragon-vector-scale { fill: none; stroke: #ff9aa4; stroke-linecap: round; stroke-linejoin: round; }
+.dragon-vector-tail { stroke-width: 5; }
+.dragon-vector-wing { fill: #e22c45; stroke: #ff8a98; stroke-width: 1.5; stroke-linejoin: round; }
+.dragon-vector-wing-detail { stroke-width: 1.6; opacity: 0.85; }
+.dragon-vector-neck { fill: #ff7180; }
+.dragon-vector-horn { fill: none; stroke: #ffd5da; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.dragon-vector-leg { fill: #c91e37; }
+.dragon-vector-scale { stroke-width: 1.7; }
+.dragon-vector-eye { fill: #fff2e8; }
+.dragon-vector-nostril { fill: #721522; }
+.dragon-report-spark { background: radial-gradient(circle, #fff2e8 0, #ff5367 45%, rgba(255, 42, 66, 0) 75%); box-shadow: 0 0 10px rgba(255, 42, 66, 0.75); }
+.dragon-report-eyebrow, .dragon-report-kicker, .dragon-report-section-heading p { color: #ff7180; }
+.dragon-report-launch-copy h3 { color: #f4f6f9; }
+.dragon-report-launch-copy > p:last-child { color: #b5beca; }
+.dragon-report-button, .dragon-report-export {
+    border-color: #ff7180;
+    background: #ff2a42;
+    color: #fff;
+}
+.dragon-report-button:hover:not(:disabled), .dragon-report-export:hover { background: #ff5266; box-shadow: 0 7px 24px rgba(255, 42, 66, 0.28); }
+.dragon-report-dialog { border-color: rgba(255, 42, 66, 0.5); box-shadow: 0 25px 100px rgba(0, 0, 0, 0.7), 0 0 45px rgba(255, 42, 66, 0.12); }
+.dragon-report-toolbar { border-color: rgba(203, 213, 225, 0.15); background: #0b0f14; }
+.dragon-report-toolbar-mark { border-color: rgba(255, 78, 98, 0.56); color: #ff5367; background: rgba(255, 42, 66, 0.12); }
+.dragon-report-toolbar-mark { border-radius: 50%; box-shadow: inset 0 0 12px rgba(255, 42, 66, 0.12); }
+.dragon-report-toolbar-mark .dragon-vector-icon { width: 2rem; height: 1.5rem; overflow: visible; fill: currentColor; }
+.dragon-report-close { border-color: rgba(203, 213, 225, 0.22); color: #dce3eb; }
+.dragon-report-close:hover { border-color: #ff7180; color: #ff7180; }
+.dragon-report-content { scrollbar-color: #762431 #11161d; }
+.dragon-report-hero { border-color: rgba(255, 42, 66, 0.3); background: radial-gradient(ellipse at 90% 20%, rgba(255, 42, 66, 0.2), transparent 43%), linear-gradient(110deg, #1b1518, #171b20 68%, #241619); }
+.dragon-report-hero h1 span { color: #ff7180; }
+.dragon-report-location { color: #bac4d0; }
+.dragon-report-summary { color: #e5e9ef; }
+.dragon-report-summary strong { color: #ff8490; }
+.dragon-report-timestamp { color: #9aa5b2; }
+.dragon-report-crest { border: 1px solid rgba(255, 83, 103, 0.56); border-radius: 50%; color: #ff5367; background: radial-gradient(circle, rgba(255, 42, 66, 0.14), rgba(15, 19, 25, 0.85) 67%); box-shadow: 0 0 0 7px rgba(255, 42, 66, 0.035), inset 0 0 24px rgba(255, 42, 66, 0.12); transform: none; }
+.dragon-report-crest::before, .dragon-report-crest::after { position: absolute; inset: 7px; border: 1px solid rgba(255, 113, 128, 0.28); border-radius: 50%; content: ""; pointer-events: none; }
+.dragon-report-crest::after { inset: -5px; border-color: rgba(255, 42, 66, 0.18); }
+.dragon-report-crest > * { transform: none; }
+.dragon-report-crest > span { top: 0.75rem; left: 0; width: 100%; color: rgba(255, 143, 153, 0.75); text-align: center; }
+.dragon-report-crest .dragon-vector-icon { width: 5rem; height: 3.75rem; overflow: visible; fill: currentColor; filter: drop-shadow(0 0 8px rgba(255, 42, 66, 0.42)); }
+.dragon-report-crest small { right: 0; bottom: 0.65rem; width: 100%; color: #ff9aa4; text-align: center; }
+.dragon-report-section-heading { border-color: rgba(203, 213, 225, 0.17); }
+.dragon-report-section-heading > span { border-color: rgba(255, 83, 103, 0.58); color: #ff7180; }
+.dragon-report-section-heading p { color: #ff7180; }
+.dragon-report-metric { border-color: rgba(203, 213, 225, 0.14); background: linear-gradient(145deg, #18202a, #151a21); }
+.dragon-report-metric > span { color: #a8b2bf; }
+.dragon-report-metric > strong { color: #eef1f5; }
+.dragon-report-metric > strong i { color: #ff7180; }
+.dragon-report-metric > small { color: #aeb8c5; }
+.dragon-report-metric-feature { border-color: rgba(255, 83, 103, 0.42); background: radial-gradient(ellipse at 100% 0, rgba(255, 42, 66, 0.2), transparent 62%), #20161a; }
+.dragon-report-metric-feature > strong { color: #ff8490; }
+.dragon-report-reading-grid article { border-color: #9c3542; background: rgba(255, 255, 255, 0.035); }
+.dragon-report-reading-grid h3 { color: #ff9aa4; }
+.dragon-report-reading-grid p { color: #c0cad6; }
+.dragon-report-table-wrap { border-color: rgba(203, 213, 225, 0.16); }
+.dragon-report-table th, .dragon-report-table td { border-color: rgba(203, 213, 225, 0.1); color: #d4dde8; }
+.dragon-report-table thead th { background: #21171b; color: #ff8490; }
+.dragon-report-table tbody th { color: #e8edf3; }
+.dragon-report-sunrise { color: #c0cad6; background: rgba(255, 255, 255, 0.035); }
+.dragon-report-sunrise > span:first-child, .dragon-report-sunset-mark { color: #ff7180; }
+.dragon-report-sunrise strong { color: #edf1f6; }
+.dragon-report-local-label { color: #ff8490; }
+.dragon-report-field-notes { border-color: rgba(255, 83, 103, 0.34); background: linear-gradient(110deg, rgba(116, 30, 43, 0.16), rgba(255,255,255,0.02)); }
+.dragon-report-field-notes li { color: #e0e5ec; }
+.dragon-report-field-notes li::before { color: #ff5367; }
+.dragon-report-footer { border-color: rgba(203, 213, 225, 0.17); }
+.dragon-report-footer > span { color: #ff8490; }
+.dragon-report-footer > p { color: #9da8b5; }
+
+.dragon-report-loading[hidden] { display: none; }
+.dragon-report-loading {
+    position: fixed;
+    z-index: 1500;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2rem 1.25rem;
+    background:
+        radial-gradient(ellipse at 50% 45%, rgba(255, 42, 66, 0.16), transparent 39%),
+        linear-gradient(rgba(214, 222, 232, 0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(214, 222, 232, 0.028) 1px, transparent 1px),
+        #0b0f14;
+    background-size: auto, 5px 5px, 5px 5px, auto;
+    color: #e8edf2;
+    text-align: center;
+}
+.dragon-report-loading::before {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(255, 255, 255, 0.025) 4px);
+    content: "";
+    opacity: 0.7;
+    pointer-events: none;
+}
+.dragon-report-loading-scene {
+    position: relative;
+    width: min(26rem, 88vw);
+    height: clamp(9rem, 28vh, 14rem);
+    margin-bottom: 0.8rem;
+}
+.report-flying-dragon {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    z-index: 2;
+    width: clamp(13rem, 36vw, 19rem);
+    height: auto;
+    overflow: visible;
+    fill: #ff5367;
+    filter: drop-shadow(0 8px 18px rgba(255, 42, 66, 0.3));
+    opacity: 0;
+    transform: translate(-50%, 1.25rem) scale(0.78);
+}
+.dragon-report-loading-active .report-flying-dragon {
+    animation: report-dragon-flight 2s cubic-bezier(0.4, 0, 0.2, 1) forwards, report-dragon-glide 520ms ease-in-out infinite alternate;
+}
+.report-flying-dragon .report-dragon-wing {
+    fill: #d92743;
+    stroke: #ff8792;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    transform-box: fill-box;
+    transform-origin: 80% 88%;
+}
+.report-flying-dragon .report-dragon-wing-detail {
+    fill: none;
+    stroke: #ff9aa4;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+    transform-box: fill-box;
+    transform-origin: 80% 88%;
+}
+.dragon-report-loading-active .report-flying-dragon .dragon-vector-wing,
+.dragon-report-loading-active .report-flying-dragon .dragon-vector-wing-detail {
+    animation: report-dragon-wing-flap 420ms ease-in-out infinite alternate;
+}
+.report-flying-dragon .dragon-vector-body { fill: #ff5367; }
+.report-flying-dragon .dragon-vector-tail,
+.report-flying-dragon .dragon-vector-scale { fill: none; stroke: #ff9aa4; stroke-linecap: round; stroke-linejoin: round; }
+.report-flying-dragon .dragon-vector-tail { stroke-width: 5; }
+.report-flying-dragon .dragon-vector-scale { stroke-width: 1.7; }
+.report-flying-dragon .report-dragon-neck,
+.report-flying-dragon .dragon-vector-neck { fill: #ff7180; }
+.report-flying-dragon .dragon-vector-horn { fill: none; stroke: #ffd5da; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.report-flying-dragon .report-dragon-leg,
+.report-flying-dragon .dragon-vector-leg { fill: #d71935; }
+.report-flying-dragon .report-dragon-eye { fill: #fff2e8; }
+.report-flying-dragon .report-dragon-nostril { fill: #791826; }
+.report-flight-trail {
+    position: absolute;
+    top: 59%;
+    left: 8%;
+    width: 24%;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(90deg, transparent, rgba(255, 42, 66, 0.62), rgba(255, 135, 146, 0.8));
+    filter: blur(3px);
+    box-shadow: 0 0 18px rgba(255, 42, 66, 0.45);
+    opacity: 0;
+    transform-origin: right;
+}
+.dragon-report-loading-active .report-flight-trail { animation: report-trail-fade 1.6s ease-out 180ms forwards; }
+.report-flight-star, .report-ember { position: absolute; display: block; border-radius: 50%; background: radial-gradient(circle, #fff2e8, #ff7180 44%, rgba(255, 42, 66, 0) 78%); box-shadow: 0 0 12px rgba(255, 42, 66, 0.65); opacity: 0; }
+.report-flight-star { width: 7px; height: 7px; filter: blur(0.4px); }
+.report-flight-star-a { top: 30%; left: 17%; }
+.report-flight-star-b { top: 65%; right: 16%; }
+.report-flight-star-c { top: 18%; right: 29%; width: 5px; height: 5px; }
+.dragon-report-loading-active .report-flight-star-a { animation: report-star-twinkle 900ms ease-in-out 180ms infinite alternate; }
+.dragon-report-loading-active .report-flight-star-b { animation: report-star-twinkle 750ms ease-in-out 400ms infinite alternate; }
+.dragon-report-loading-active .report-flight-star-c { animation: report-star-twinkle 1s ease-in-out 620ms infinite alternate; }
+.report-ember { top: 55%; left: 34%; width: 10px; height: 10px; }
+.report-ember-a { --ember-x: -4rem; --ember-y: 2rem; }
+.report-ember-b { --ember-x: -2.8rem; --ember-y: 3rem; width: 7px; height: 7px; animation-delay: 260ms !important; }
+.report-ember-c { --ember-x: -5.3rem; --ember-y: 1.4rem; width: 5px; height: 5px; animation-delay: 520ms !important; }
+.dragon-report-loading-active .report-ember { animation: report-ember-burst 800ms ease-out 200ms infinite; }
+.dragon-report-loading-kicker { position: relative; margin: 0 0 0.6rem; color: #ff7180; font: 700 0.65rem 'Rajdhani', sans-serif; letter-spacing: 0.2em; }
+.dragon-report-loading h2 { position: relative; margin: 0; color: #f4f6f9; font: 800 clamp(1.3rem, 4vw, 2rem)/1.3 'Orbitron', sans-serif; letter-spacing: 0.03em; text-transform: uppercase; }
+.dragon-report-loading-caption { position: relative; margin: 0.6rem 0 1.25rem; color: #b5beca; font-size: 1rem; }
+.report-loading-dots { display: inline-flex; width: 1.5em; }
+.report-loading-dots i { color: #ff5367; font-style: normal; animation: report-dot-pulse 900ms ease-in-out infinite; }
+.report-loading-dots i:nth-child(2) { animation-delay: 180ms; }
+.report-loading-dots i:nth-child(3) { animation-delay: 360ms; }
+.dragon-report-loading-progress { position: relative; width: min(21rem, 76vw); height: 5px; overflow: hidden; border: 1px solid rgba(255, 113, 128, 0.35); background: #171d25; }
+.dragon-report-loading-progress span { display: block; width: 0; height: 100%; background: linear-gradient(90deg, #b80f2a, #ff2a42, #ffd5da); box-shadow: 0 0 12px #ff2a42; }
+.dragon-report-loading-active .dragon-report-loading-progress span { animation: report-loading-fill 2s ease-out forwards; }
+.dragon-report-loading-code { position: relative; display: flex; width: min(21rem, 76vw); justify-content: space-between; gap: 1rem; margin: 0.5rem 0 0; color: #8995a3; font: 700 0.55rem 'Rajdhani', sans-serif; letter-spacing: 0.13em; }
+.dragon-report-loading-code span { color: #ff7180; }
+body.dragon-report-loading-open { overflow: hidden; }
+@keyframes report-dragon-flight {
+    0% { opacity: 0; transform: translate(-115%, 2rem) scale(0.74) rotate(-7deg); }
+    14% { opacity: 1; }
+    70% { opacity: 1; transform: translate(-20%, -0.5rem) scale(1.04) rotate(1deg); }
+    100% { opacity: 0.2; transform: translate(38%, -1.7rem) scale(1.16) rotate(4deg); }
+}
+@keyframes report-dragon-glide { from { margin-top: 0; } to { margin-top: -0.65rem; } }
+@keyframes report-dragon-wing-flap { from { transform: rotate(-35deg) scaleY(0.68); } to { transform: rotate(22deg) scaleY(1.08); } }
+@keyframes report-trail-fade { 0% { opacity: 0; transform: scaleX(0.3); } 35% { opacity: 0.9; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(0.2); } }
+@keyframes report-star-twinkle { from { opacity: 0.15; transform: scale(0.7); } to { opacity: 0.9; transform: scale(1.4); } }
+@keyframes report-ember-burst { 0% { opacity: 0; transform: translate(0, 0) scale(0.4); } 22% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--ember-x), var(--ember-y)) scale(0.2); } }
+@keyframes report-dot-pulse { 0%, 30% { opacity: 0.25; } 70%, 100% { opacity: 1; } }
+@keyframes report-loading-fill { to { width: 100%; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .dragon-report-loading-active .report-flying-dragon { animation: none; top: 25%; opacity: 1; transform: translate(-50%, 0); }
+    .dragon-report-loading-active .report-flying-dragon .dragon-vector-wing,
+    .dragon-report-loading-active .report-flying-dragon .dragon-vector-wing-detail,
+    .dragon-report-loading-active .report-flight-star,
+    .dragon-report-loading-active .report-ember,
+    .dragon-report-loading-active .report-flight-trail { animation: none; opacity: 0.8; }
+    .dragon-report-loading-active .dragon-report-loading-progress span { animation: report-loading-fill 2s linear forwards; }
+}
+
+@media print {
+    @page { size: A4; margin: 12mm; }
+    html, body { width: auto; min-width: 0; margin: 0 !important; padding: 0 !important; background: #0b0f14 !important; color: #e8edf2 !important; print-color-adjust: exact !important; -webkit-print-color-adjust: exact !important; }
+    body > :not(#dragon-report-modal) { display: none !important; }
+    body > #dragon-report-modal { position: static !important; display: block !important; overflow: visible !important; padding: 0 !important; background: #0b0f14 !important; backdrop-filter: none !important; }
+    #dragon-report-modal .dragon-report-dialog { width: 100% !important; max-height: none !important; margin: 0 !important; overflow: visible !important; border: 1px solid #74303a !important; background: #0f141a !important; color: #e8edf2 !important; box-shadow: none !important; clip-path: none !important; }
+    #dragon-report-modal .dragon-report-toolbar { display: none !important; }
+    #dragon-report-modal .dragon-report-content { max-height: none !important; overflow: visible !important; padding: 0 !important; }
+    #dragon-report-modal .dragon-report-hero { border-color: #81323d !important; background: #1b1518 !important; }
+    #dragon-report-modal .dragon-report-hero h1 { color: #f4f6f9 !important; }
+    #dragon-report-modal .dragon-report-hero h1 span { color: #ff7180 !important; }
+    #dragon-report-modal .dragon-report-location, #dragon-report-modal .dragon-report-summary { color: #cbd3dd !important; }
+    #dragon-report-modal .dragon-report-summary strong { color: #ff8490 !important; }
+    #dragon-report-modal .dragon-report-timestamp { color: #a7b1bd !important; }
+    #dragon-report-modal .dragon-report-kicker, #dragon-report-modal .dragon-report-section-heading p { color: #ff7180 !important; }
+    #dragon-report-modal .dragon-report-section-heading { border-color: #343b45 !important; }
+    #dragon-report-modal .dragon-report-section-heading > span { border-color: #a43c4a !important; color: #ff7180 !important; }
+    #dragon-report-modal .dragon-report-section-heading h2 { color: #e8edf2 !important; }
+    #dragon-report-modal .dragon-report-metric { border-color: #343b45 !important; background: #171d25 !important; }
+    #dragon-report-modal .dragon-report-metric-feature { border-color: #a43c4a !important; background: #24171b !important; }
+    #dragon-report-modal .dragon-report-metric > span, #dragon-report-modal .dragon-report-metric > small { color: #b5bfcc !important; }
+    #dragon-report-modal .dragon-report-metric > strong { color: #edf1f6 !important; }
+    #dragon-report-modal .dragon-report-metric-feature > strong { color: #ff8490 !important; }
+    #dragon-report-modal .dragon-report-reading-grid article { border-color: #8b3441 !important; background: #151a21 !important; }
+    #dragon-report-modal .dragon-report-reading-grid h3 { color: #ff9aa4 !important; }
+    #dragon-report-modal .dragon-report-reading-grid p, #dragon-report-modal .dragon-report-field-notes li { color: #cbd3dd !important; }
+    #dragon-report-modal .dragon-report-table-wrap { border-color: #343b45 !important; }
+    #dragon-report-modal .dragon-report-table th, #dragon-report-modal .dragon-report-table td { border-color: #2b323b !important; color: #d5dde7 !important; }
+    #dragon-report-modal .dragon-report-table thead th { background: #24171b !important; color: #ff8490 !important; }
+    #dragon-report-modal .dragon-report-table tbody th { color: #edf1f6 !important; }
+    #dragon-report-modal .dragon-report-sunrise { background: #171d25 !important; color: #c5cfda !important; }
+    #dragon-report-modal .dragon-report-sunrise strong { color: #edf1f6 !important; }
+    #dragon-report-modal .dragon-report-local-label { color: #ff8490 !important; }
+    #dragon-report-modal .dragon-report-field-notes { border-color: #81323d !important; background: #1d1519 !important; }
+    #dragon-report-modal .dragon-report-field-notes li::before { color: #ff5367 !important; }
+    #dragon-report-modal .dragon-report-footer { border-color: #343b45 !important; }
+    #dragon-report-modal .dragon-report-footer > span { color: #ff8490 !important; }
+    #dragon-report-modal .dragon-report-footer > p { color: #aab4c0 !important; }
+    #dragon-report-modal .dragon-report-hero, #dragon-report-modal .dragon-report-section, #dragon-report-modal .dragon-report-metric, #dragon-report-modal .dragon-report-reading-grid article, #dragon-report-modal .dragon-report-sunrise, #dragon-report-modal .dragon-report-table-wrap { break-inside: avoid; }
+    #dragon-report-modal .dragon-report-section { margin-top: 1rem !important; }
+    #dragon-report-modal .dragon-report-hero { min-height: 0 !important; padding: 1.15rem !important; }
+    #dragon-report-modal .dragon-report-crest { width: 6rem !important; height: 6rem !important; flex-basis: 6rem !important; }
+    #dragon-report-modal .dragon-report-metric { min-height: 5.5rem !important; padding: 0.65rem !important; }
+    #dragon-report-modal .dragon-report-reading-grid article { padding: 0.65rem !important; }
+    #dragon-report-modal .dragon-report-metric > small, #dragon-report-modal .dragon-report-reading-grid p, #dragon-report-modal .dragon-report-field-notes li { font-size: 8.5pt !important; }
+    #dragon-report-modal .dragon-report-table th, #dragon-report-modal .dragon-report-table td { padding: 0.45rem !important; font-size: 8pt !important; }
+    #dragon-report-modal .dragon-report-footer { margin-top: 0.8rem !important; }
+    #dragon-report-modal .dragon-report-footer > p { font-size: 7.5pt !important; }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {

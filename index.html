@@ -595,6 +595,9 @@
                     </h1>
                     <p class="text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-1">Nexus Command Terminal</p>
                 </div>
+                <button id="theme-toggle" type="button" class="theme-toggle interactive-node" aria-label="Switch to dark mode" title="Switch to dark mode">
+                    <i data-lucide="moon" aria-hidden="true"></i>
+                </button>
             </div>
 
             <!-- Location Search Form -->
@@ -614,14 +617,14 @@
         </header>
 
         <!-- Main Dashboard Grid Architecture -->
-        <main class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <main class="dashboard-grid grid grid-cols-1 lg:grid-cols-3 gap-8">
             
             <!-- Weather Core Unit (Left Column) -->
-            <section class="xl:col-span-1 hud-panel p-8 flex flex-col justify-between" id="core-card">
+            <section class="lg:col-span-1 hud-panel p-8 flex flex-col justify-between" id="core-card">
                 <div>
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <h2 id="city-name" class="text-4xl font-tech font-black text-[var(--carbon-black)] uppercase tracking-tight">System Boot...</h2>
+                            <h2 id="city-name" class="text-4xl font-tech font-black text-[var(--primary-text)] uppercase tracking-tight">System Boot...</h2>
                             <p id="current-date" class="text-sm text-gray-500 font-bold uppercase tracking-widest mt-1">Acquiring temporal data</p>
                         </div>
                         <!-- Live Feed Indicator -->
@@ -634,7 +637,7 @@
                     <!-- Primary Readout & Mecha Dragon Projection -->
                     <div class="my-8 flex items-center justify-between relative">
                         <div class="z-10">
-                            <div id="temperature" class="text-7xl font-tech font-black text-[var(--carbon-black)] tracking-tighter">--°</div>
+                            <div id="temperature" class="text-7xl font-tech font-black text-[var(--primary-text)] tracking-tighter">--°</div>
                             <p id="weather-desc" class="text-md font-bold text-gray-600 mt-2 uppercase tracking-widest flex items-center gap-2">
                                 --
                             </p>
@@ -956,7 +959,7 @@
 
         <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Humidity</p>
     </div>
-    <p id="humidity" class="font-tech font-bold text-2xl text-[var(--carbon-black)] mt-1 transition-colors duration-500 relative z-10">--%</p>
+    <p id="humidity" class="font-tech font-bold text-2xl text-[var(--primary-text)] mt-1 transition-colors duration-500 relative z-10">--%</p>
 </div>
                    <!-- Pressure Node -->
 <div class="interactive-node metric-node group cursor-pointer p-4 flex flex-col gap-2 hover:bg-[var(--black-30,#121212)]">
@@ -1014,7 +1017,7 @@
 
         <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Pressure</p>
     </div>
-    <p id="pressure" class="font-tech font-bold text-2xl text-[var(--carbon-black)] mt-1 transition-colors duration-500 relative z-10">-- hPa</p>
+    <p id="pressure" class="font-tech font-bold text-2xl text-[var(--primary-text)] mt-1 transition-colors duration-500 relative z-10">-- hPa</p>
 </div>
 
                     <!-- Visibility Node -->
@@ -1090,7 +1093,7 @@
 
         <p class="node-label text-[10px] text-gray-500 font-bold uppercase tracking-widest transition-colors duration-500">Visibility</p>
     </div>
-    <p id="visibility" class="font-tech font-bold text-2xl text-[var(--carbon-black)] mt-1 transition-colors duration-500 relative z-10">-- km</p>
+    <p id="visibility" class="font-tech font-bold text-2xl text-[var(--primary-text)] mt-1 transition-colors duration-500 relative z-10">-- km</p>
 </div>
 
 <!-- JavaScript for Mouse-Tracking Eye Pupil -->
@@ -1120,14 +1123,16 @@
         }
     });
 </script>
+                </div>
+            </section>
             <!-- Analytics Array (Right Columns) -->
-            <section class="trajectory-section xl:col-span-3 flex flex-col gap-8">
+            <section class="trajectory-section lg:col-span-2 flex flex-col gap-8">
                 
                 <!-- Radar Chart Container -->
                 <div class="hud-panel trajectory-panel p-6 md:p-8 flex-grow">
                     <div class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
                         <div>
-                            <h3 class="text-xl md:text-2xl font-tech font-bold text-[var(--carbon-black)] flex items-center gap-3 uppercase tracking-widest">
+                            <h3 class="text-xl md:text-2xl font-tech font-bold text-[var(--primary-text)] flex items-center gap-3 uppercase tracking-widest">
                                 <span class="relative flex w-9 h-9 items-center justify-center text-[var(--neon-red)]">
                                     <i data-lucide="activity" class="trajectory-icon w-8 h-8"></i>
                                     <span class="trajectory-icon-ring absolute inset-1 rounded-full border border-[var(--neon-red)] opacity-40"></span>
@@ -1138,7 +1143,7 @@
                         </div>
                     </div>
                     <!-- Responsive canvas container for Chart.js -->
-                    <div id="chart-container">
+                    <div id="chart-container" class="chart-container-wrapper">
                         <canvas id="forecastChart"></canvas>
                     </div>
                 </div>
